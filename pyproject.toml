@@ -16,7 +16,15 @@ dependencies = [
     "pydantic>=2.0",
     "httpx>=0.24",
     "python-dotenv>=1.1",
-    "python-multipart>=0.0.6"
+    "python-multipart>=0.0.6",
+    "pytest-asyncio (>=0.21)",
+    "black (>=24.3)",
+    "isort (>=5.14)",
+    "ruff (>=0.13)",
+    "rapidfuzz (>=2.9)",
+    "mypy (>=1.5)",
+    "pre-commit (>=3.4)",
+    "poetry-core (>=2.0.0)"
 ]
 
 [project.optional-dependencies]
