@@ -1,0 +1,38 @@
+[project]
+name = "what2cook"
+version = "0.1.0"
+description = "What2Cook — find recipes from available ingredients (FastAPI + PostgreSQL + SQLAlchemy, Python 3.14)"
+authors = [
+    { name = "maxx_PC", email = "m.petrykin@gmx.de" }
+]
+readme = "README.md"
+requires-python = ">=3.14,<4.0"
+dependencies = [
+    "fastapi>=0.120",
+    "uvicorn[standard]>=0.22",
+    "sqlalchemy>=2.0",
+    "asyncpg>=0.28",
+    "alembic>=1.12",
+    "pydantic>=2.0",
+    "httpx>=0.24",
+    "python-dotenv>=1.1",
+    "python-multipart>=0.0.6"
+]
+
+[project.optional-dependencies]
+fuzzy = [
+    "rapidfuzz>=2.9"
+]
+dev = [
+    "pytest>=7.4",
+    "pytest-asyncio>=0.21",
+    "black>=24.3",
+    "isort>=5.14",
+    "ruff>=0.13",
+    "mypy>=1.5",
+    "pre-commit>=3.4"
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
