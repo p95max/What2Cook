@@ -9,6 +9,7 @@ from sqlalchemy.engine import Connection
 from alembic import context
 from sqlalchemy.ext.asyncio import create_async_engine
 from app.db import Base
+import app.models  # noqa: F401
 
 config = context.config
 fileConfig(config.config_file_name)

@@ -29,4 +29,7 @@ class Recipe(Base):
     prep_minutes = Column(Integer, nullable=True)
     servings = Column(Integer, nullable=True)
     source = Column(String, nullable=True)
+    image_url = Column(String, nullable=True)
+    thumbnail_url = Column(String, nullable=True)
+    image_meta = Column(JSON, nullable=True)
     ingredients = relationship("Ingredient", secondary=recipe_ingredient, backref="recipes")
