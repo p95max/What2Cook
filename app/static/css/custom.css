@@ -17,3 +17,29 @@ body { padding-bottom: 60px; }
 .card.h-100 .card-body { display: flex; flex-direction: column; min-height: 160px; }
 
 .card img { display: block; width: 100%; height: auto; max-height: 220px; object-fit: cover; }
+
+@media (hover: hover) and (pointer: fine) {
+  .card.position-relative {
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    will-change: transform, box-shadow;
+  }
+
+  .card.position-relative:hover,
+  .card.position-relative:focus-within {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 10px 30px rgba(17,24,39,0.12), 0 4px 8px rgba(17,24,39,0.06);
+    border-color: rgba(13,110,253,0.12); /* subtle bluish accent */
+    z-index: 5; /* bring above neighbours */
+  }
+}
+
+.card.position-relative:focus-within {
+  outline: 3px solid rgba(13,110,253,0.12);
+  outline-offset: 3px;
+}
+
+@media (max-width: 575.98px) {
+  .card.position-relative { transition: box-shadow 160ms ease; transform: none !important; }
+  .card.position-relative:hover { transform: none !important; box-shadow: 0 6px 16px rgba(17,24,39,0.08); }
+}
+
