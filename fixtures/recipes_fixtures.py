@@ -1,5 +1,6 @@
 """
-Fixtures loader with external image URLs: insert 10 common recipes and set image_url/thumbnail_url fields.
+Fixtures loader with external image URLs(https://commons.wikimedia.org/wiki/Main_Page): 10 common recipes for test database.
+USE: " docker compose exec -e PYTHONPATH=/app web python fixtures/recipes_fixtures.py "
 """
 import asyncio
 from sqlalchemy import select, insert
