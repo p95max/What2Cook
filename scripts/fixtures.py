@@ -145,8 +145,8 @@ FIXTURES = [
         "prep_minutes": 10,
         "servings": 1,
 
-        "image_url": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Grilled_Cheese_Sandwich.jpg",
-        "thumbnail_url": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Grilled_Cheese_Sandwich.jpg",
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/7a/Oatmeal_porridge_with_fruits_5.jpg",
+        "thumbnail_url": "https://upload.wikimedia.org/wikipedia/commons/7/7a/Oatmeal_porridge_with_fruits_5.jpg",
         "image_meta": {
             "author": "Shisma",
             "page_url": "https://commons.wikimedia.org/wiki/File:Oatmeal_porridge_with_fruits_4.jpg",

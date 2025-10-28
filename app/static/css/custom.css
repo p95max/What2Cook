@@ -1,3 +1,19 @@
 body { padding-bottom: 60px; }
+
 .card-title { font-size: 1.1rem; }
+
 .badge { font-size: 0.85rem; }
+
+.card { overflow: hidden; }
+
+.card .card-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;
+    white-space: normal; margin-bottom: 0.25rem; }
+
+.card .card-body p, .card .card-body .small.text-truncate { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+    overflow: hidden; text-overflow: ellipsis; white-space: normal; }
+
+.card .card-body { overflow-wrap: anywhere; word-break: break-word; }
+
+.card.h-100 .card-body { display: flex; flex-direction: column; min-height: 160px; }
+
+.card img { display: block; width: 100%; height: auto; max-height: 220px; object-fit: cover; }

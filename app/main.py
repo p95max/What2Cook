@@ -14,7 +14,7 @@ from fastapi import Request
 import re
 from typing import List
 from fastapi import Query, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from app.db import get_session
@@ -22,7 +22,6 @@ from app.models import Ingredient, Recipe, recipe_ingredient
 from app.api import _map_input_to_ingredient_names
 
 BASE_DIR = Path(__file__).resolve().parent
-
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 try:
@@ -41,6 +40,43 @@ app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="stat
 async def on_startup() -> None:
     if os.getenv("AUTO_INIT_DB", "true").lower() in ("1", "true", "yes"):
         await init_db()
+
+PER_PAGE = 9
+@app.get("/", include_in_schema=False, name="index")
+async def index(request: Request, page: int = Query(1, ge=1), session: AsyncSession = Depends(get_session)):
+    offset = (page - 1) * PER_PAGE
+    stmt = select(Recipe).options(selectinload(Recipe.ingredients)).order_by(Recipe.title).offset(offset).limit(PER_PAGE)
+    res = await session.execute(stmt)
+    recs = res.scalars().unique().all()
+
+    total = (await session.execute(select(func.count()).select_from(Recipe))).scalar_one()
+    total_pages = max(1, (int(total) + PER_PAGE - 1) // PER_PAGE)
+
+    recipes_out = []
+    for rec in recs:
+        recipes_out.append({
+            "id": rec.id,
+            "title": rec.title,
+            "instructions": rec.instructions,
+            "prep_minutes": rec.prep_minutes,
+            "servings": rec.servings,
+            "image_url": rec.image_url,
+            "thumbnail_url": rec.thumbnail_url,
+            "image_meta": rec.image_meta,
+            "ingredients": [ing.name for ing in getattr(rec, "ingredients", [])] if getattr(rec, "ingredients", None) else [],
+        })
+
+    return templates.TemplateResponse(
+        "index.html",
+        {
+            "request": request,
+            "recipes": recipes_out,
+            "page": page,
+            "total_pages": total_pages,
+            "per_page": PER_PAGE,
+            "total": int(total),
+        }
+    )
 
 @app.get("/search", include_in_schema=False, name="search")
 async def search(request: Request,
@@ -98,10 +134,10 @@ async def search(request: Request,
 
     return templates.TemplateResponse("search.html", {"request": request, "recipes": recipes_out})
 
-
-
 @app.get("/recipes/{recipe_id}", include_in_schema=False, name="recipe_page")
-async def recipe_page(request: Request, recipe_id: int, session: AsyncSession = Depends(get_session)):
+async def recipe_page(request: Request,
+                      recipe_id: int,
+                      session: AsyncSession = Depends(get_session)):
     stmt = select(Recipe).options(selectinload(Recipe.ingredients)).where(Recipe.id == recipe_id)
     res = await session.execute(stmt)
     rec = res.scalars().first()
