@@ -99,22 +99,6 @@
 
                         <p class="mb-1"><strong>Ingredients:</strong> {{ (r.ingredients | join(', ')) | e }}</p>
 
-                        <p class="mb-1"><strong>Have:</strong>
-                          {% if r.have and r.have | length %}
-                            {% for h in r.have %}<span class="badge bg-success me-1">{{ h | e }}</span>{% endfor %}
-                          {% else %}
-                            <span class="text-muted">none</span>
-                          {% endif %}
-                        </p>
-
-                        <p class="mb-1"><strong>Missing:</strong>
-                          {% if r.missing and r.missing | length %}
-                            {% for m in r.missing %}<span class="badge bg-danger me-1">{{ m | e }}</span>{% endfor %}
-                          {% else %}
-                            <span class="text-muted">none</span>
-                          {% endif %}
-                        </p>
-
                         <div class="mt-2">
                           <a href="{{ r.image_url or r.image_meta.file_url or '#' }}" class="btn btn-outline-secondary btn-sm" target="_blank" rel="noopener noreferrer">View image</a>
                           {% if r.source %}

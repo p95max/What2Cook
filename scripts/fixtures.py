@@ -12,6 +12,7 @@ FIXTURES = [
         "instructions": "Beat eggs with salt and pepper. Cook in butter until softly set.",
         "prep_minutes": 8,
         "servings": 1,
+
         "image_url": "https://upload.wikimedia.org/wikipedia/commons/2/20/Scrambed_eggs.jpg",
         "thumbnail_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Scrambed_eggs.jpg/512px-Scrambed_eggs.jpg",
         "image_meta": {
@@ -21,6 +22,7 @@ FIXTURES = [
             "license": "CC BY-SA 3.0",
             "license_url": "https://creativecommons.org/licenses/by-sa/3.0"
         },
+
         "ingredients": [
             ("egg", 3, "pcs"),
             ("butter", 10, "g"),
@@ -34,8 +36,17 @@ FIXTURES = [
         "instructions": "Boil potatoes until tender. Toss with butter and parsley.",
         "prep_minutes": 25,
         "servings": 2,
-        "image_url": "https://picsum.photos/seed/boiled_potatoes/1200/800",
-        "thumbnail_url": "https://picsum.photos/seed/boiled_potatoes/400/267",
+
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Hamburgers_with_Worcestershire_sauce%2C_on_boiled_yellow_potatoes_with_salt%2C_on_lettuce_with_garlic_olive_oil_-_Massachusetts.jpg",
+        "thumbnail_url": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Hamburgers_with_Worcestershire_sauce%2C_on_boiled_yellow_potatoes_with_salt%2C_on_lettuce_with_garlic_olive_oil_-_Massachusetts.jpg",
+        "image_meta": {
+            "author": "Daderot",
+            "page_url": "https://commons.wikimedia.org/wiki/File:Hamburgers_with_Worcestershire_sauce,_on_boiled_yellow_potatoes_with_salt,_on_lettuce_with_garlic_olive_oil_-_Massachusetts.jpg",
+            "file_url": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Hamburgers_with_Worcestershire_sauce%2C_on_boiled_yellow_potatoes_with_salt%2C_on_lettuce_with_garlic_olive_oil_-_Massachusetts.jpg",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0"
+        },
+
         "ingredients": [("potato", 600, "g"), ("butter", 20, "g"), ("salt", None, "to taste")],
     },
     {
@@ -43,8 +54,17 @@ FIXTURES = [
         "instructions": "Cook pasta and toss with a simple tomato, garlic and onion sauce.",
         "prep_minutes": 20,
         "servings": 2,
-        "image_url": "https://picsum.photos/seed/tomato_pasta/1200/800",
-        "thumbnail_url": "https://picsum.photos/seed/tomato_pasta/400/267",
+
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/71/Pasta_al_pomodoro.JPG",
+        "thumbnail_url": "https://upload.wikimedia.org/wikipedia/commons/7/71/Pasta_al_pomodoro.JPG",
+        "image_meta": {
+            "author": "Roberto De Martino",
+            "page_url": "https://commons.wikimedia.org/wiki/File:Pasta_al_pomodoro.JPG",
+            "file_url": "https://upload.wikimedia.org/wikipedia/commons/7/71/Pasta_al_pomodoro.JPG",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0"
+        },
+
         "ingredients": [("pasta", 200, "g"), ("tomato", 3, "pcs"), ("onion", 1, "pcs"), ("garlic", 1, "clove")],
     },
     {
@@ -52,8 +72,17 @@ FIXTURES = [
         "instructions": "Cook rice and stir-fry mixed vegetables, then combine with soy sauce.",
         "prep_minutes": 25,
         "servings": 2,
-        "image_url": "https://picsum.photos/seed/rice_veg/1200/800",
-        "thumbnail_url": "https://picsum.photos/seed/rice_veg/400/267",
+
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/9/9d/Chicken_jambalaya_-_2010.jpg",
+        "thumbnail_url": "https://upload.wikimedia.org/wikipedia/commons/9/9d/Chicken_jambalaya_-_2010.jpg",
+        "image_meta": {
+            "author": "Craig Murphy",
+            "page_url": "https://commons.wikimedia.org/wiki/File:Chicken_jambalaya_-_2010.jpg",
+            "file_url": "https://upload.wikimedia.org/wikipedia/commons/9/9d/Chicken_jambalaya_-_2010.jpg",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0"
+        },
+
         "ingredients": [("rice", 200, "g"), ("carrot", 1, "pcs"), ("frozen peas", 100, "g"), ("onion", 1, "pcs")],
     },
     {
@@ -61,8 +90,17 @@ FIXTURES = [
         "instructions": "Simmer chicken with onion, carrot and celery for a light soup.",
         "prep_minutes": 60,
         "servings": 4,
-        "image_url": "https://picsum.photos/seed/chicken_soup/1200/800",
-        "thumbnail_url": "https://picsum.photos/seed/chicken_soup/400/267",
+
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/2/2a/Simple_vegetable_soup_2009.jpg",
+        "thumbnail_url": "https://upload.wikimedia.org/wikipedia/commons/2/2a/Simple_vegetable_soup_2009.jpg",
+        "image_meta": {
+            "author": "Scott Teresi",
+            "page_url": "https://commons.wikimedia.org/wiki/File:Simple_vegetable_soup_2009.jpg",
+            "file_url": "https://upload.wikimedia.org/wikipedia/commons/2/2a/Simple_vegetable_soup_2009.jpg",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0"
+        },
+
         "ingredients": [("chicken pieces", 600, "g"), ("onion", 1, "pcs"), ("carrot", 2, "pcs")],
     },
     {
@@ -70,8 +108,17 @@ FIXTURES = [
         "instructions": "Chop fresh vegetables and dress with olive oil and lemon.",
         "prep_minutes": 10,
         "servings": 2,
-        "image_url": "https://picsum.photos/seed/fresh_salad/1200/800",
-        "thumbnail_url": "https://picsum.photos/seed/fresh_salad/400/267",
+
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/f/f3/Fresh_salads.jpg",
+        "thumbnail_url": "https://upload.wikimedia.org/wikipedia/commons/f/f3/Fresh_salads.jpg",
+        "image_meta": {
+            "author": "Ester Gasper Kimario",
+            "page_url": "https://commons.wikimedia.org/wiki/File:Fresh_salads.jpg",
+            "file_url": "https://upload.wikimedia.org/wikipedia/commons/f/f3/Fresh_salads.jpg",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0"
+        },
+
         "ingredients": [("tomato", 2, "pcs"), ("cucumber", 1, "pcs"), ("onion", 0.5, "pcs"), ("olive oil", 1, "tbsp")],
     },
     {
@@ -79,8 +126,17 @@ FIXTURES = [
         "instructions": "Butter bread, add cheese and fry until golden and melted.",
         "prep_minutes": 10,
         "servings": 1,
-        "image_url": "https://picsum.photos/seed/grilled_cheese/1200/800",
-        "thumbnail_url": "https://picsum.photos/seed/grilled_cheese/400/267",
+
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Grilled_Cheese_Sandwich.jpg",
+        "thumbnail_url": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Grilled_Cheese_Sandwich.jpg",
+        "image_meta": {
+            "author": "Quickspicerecipes",
+            "page_url": "https://commons.wikimedia.org/wiki/File:Grilled_Cheese_Sandwich.jpg",
+            "file_url": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Grilled_Cheese_Sandwich.jpg",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0"
+        },
+
         "ingredients": [("bread", 2, "slices"), ("cheese", 2, "slices"), ("butter", 10, "g")],
     },
     {
@@ -88,8 +144,17 @@ FIXTURES = [
         "instructions": "Cook oats with milk or water and top with banana or honey.",
         "prep_minutes": 10,
         "servings": 1,
-        "image_url": "https://picsum.photos/seed/oatmeal/1200/800",
-        "thumbnail_url": "https://picsum.photos/seed/oatmeal/400/267",
+
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Grilled_Cheese_Sandwich.jpg",
+        "thumbnail_url": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Grilled_Cheese_Sandwich.jpg",
+        "image_meta": {
+            "author": "Shisma",
+            "page_url": "https://commons.wikimedia.org/wiki/File:Oatmeal_porridge_with_fruits_4.jpg",
+            "file_url": "https://upload.wikimedia.org/wikipedia/commons/b/bf/Oatmeal_porridge_with_fruits_4.jpg",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0"
+        },
+
         "ingredients": [("rolled oats", 60, "g"), ("milk", 200, "ml"), ("banana", 1, "pcs")],
     },
     {
