@@ -67,37 +67,16 @@ clearBtn.addEventListener("click", () => {
   resultsEl.innerHTML = "";
 });
 
-form.addEventListener("submit", async (ev) => {
-  ev.preventDefault();
-  const raw = input.value || "";
-  const ingredients = parseInput(raw);
-  if (ingredients.length === 0) {
-    showAlert("Please enter at least one ingredient", "warning");
-    return;
-  }
-
-  spinner.style.display = "";
-  resultsEl.innerHTML = "";
-  try {
-    const resp = await fetch("/api/recipes/search", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Accept": "application/json" },
-      body: JSON.stringify({ ingredients, limit: 50 })
-    });
-    if (!resp.ok) {
-      const txt = await resp.text();
-      showAlert(`Server error: ${resp.status} ${txt}`);
+if ((form.method || "").toLowerCase() === "post") {
+  form.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const raw = input.value || "";
+    const ingredients = parseInput(raw);
+    if (ingredients.length === 0) {
+      showAlert("Please enter at least one ingredient", "warning");
       return;
     }
-    const data = await resp.json();
-    if (!Array.isArray(data) || data.length === 0) {
-      resultsEl.innerHTML = `<div class="col-12"><div class="alert alert-info">No matching recipes found.</div></div>`;
-    } else {
-      resultsEl.innerHTML = data.map(renderRecipeCard).join("");
-    }
-  } catch (e) {
-    showAlert("Network error: " + (e.message || e), "danger");
-  } finally {
-    spinner.style.display = "none";
-  }
-});
+    await performSearch(raw);
+  });
+}
+

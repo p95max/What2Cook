@@ -10,7 +10,7 @@
         <h5 class="card-title">Enter ingredients you have</h5>
         <p class="card-text">Separate ingredients by comma or newline. Example: <code>egg, milk, flour</code></p>
 
-        <form id="search-form" class="mb-3" method="post" action="/">
+        <form id="search-form" class="mb-3" method="get" action="/search">
           <div class="mb-2">
             <textarea id="ingredients-input" name="ingredients" class="form-control" rows="3" placeholder="e.g. egg, milk, flour">{{ request.query_params.get('ingredients','') }}</textarea>
           </div>

@@ -41,8 +41,9 @@
             <p style="white-space:pre-line;">{{ recipe.instructions or '-' }}</p>
 
             <div class="mt-3">
-              <a href="{{ request.url_for('search') }}" class="btn btn-outline-secondary btn-sm">Back to search</a>
+              <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">Back to search</button>
             </div>
+
           </div>
         </div>
 

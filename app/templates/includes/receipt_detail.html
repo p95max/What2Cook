@@ -27,7 +27,11 @@
 
           <p class="mb-1"><strong>Ingredients:</strong> {{ (r.ingredients | join(', ')) | e }}</p>
 
-          <a class="stretched-link" href="{{ request.url_for('recipe_page', recipe_id=r.id) }}" aria-label="Open recipe details"></a>
+          <a class="stretched-link"
+           href="{{ (request.url_for('recipe_page', recipe_id=r.id) if request is defined else '/recipes/' ~ r.id) }}"
+           aria-label="Open recipe details">
+          </a>
+
         </div>
       </div>
     </div>
