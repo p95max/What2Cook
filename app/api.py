@@ -52,8 +52,10 @@ async def search_recipes(query: IngredientsQuery, session: AsyncSession = Depend
     result = await session.execute(stmt)
     candidates = result.scalars().unique().all()
     out = []
+    # внутри app/api.py — часть функции search_recipes (заменить старый out.append({...}) на этот)
     for rec in candidates:
-        ing_stmt = select(Ingredient.name).select_from(recipe_ingredient.join(Ingredient)).where(recipe_ingredient.c.recipe_id == rec.id)
+        ing_stmt = select(Ingredient.name).select_from(recipe_ingredient.join(Ingredient)).where(
+            recipe_ingredient.c.recipe_id == rec.id)
         ing_res = await session.execute(ing_stmt)
         rec_ing_names = [row[0] for row in ing_res.fetchall()]
         rec_ing_norm = [n.lower() for n in rec_ing_names]
@@ -72,7 +74,11 @@ async def search_recipes(query: IngredientsQuery, session: AsyncSession = Depend
                 "missing": missing,
                 "have": have,
                 "ingredients": rec_ing_names,
+                "image_url": getattr(rec, "image_url", None),
+                "thumbnail_url": getattr(rec, "thumbnail_url", None),
+                "image_meta": getattr(rec, "image_meta", None),
             })
+
     out_sorted = sorted(out, key=lambda x: (-x["score"], -x["match_count"], x["title"]))
     limit = max(1, min(100, query.limit or 20))
     page = max(1, query.page or 1)
