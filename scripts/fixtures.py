@@ -162,8 +162,17 @@ FIXTURES = [
         "instructions": "Mash banana, mix with egg and a little flour, fry small pancakes.",
         "prep_minutes": 15,
         "servings": 2,
-        "image_url": "https://picsum.photos/seed/banana_pancakes/1200/800",
-        "thumbnail_url": "https://picsum.photos/seed/banana_pancakes/400/267",
+
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/8/81/Healthy_Banana_Pancakes.jpg",
+        "thumbnail_url": "https://upload.wikimedia.org/wikipedia/commons/8/81/Healthy_Banana_Pancakes.jpg",
+        "image_meta": {
+            "author": "FitTasteTic",
+            "page_url": "https://commons.wikimedia.org/wiki/File:Healthy_Banana_Pancakes.jpg",
+            "file_url": "https://upload.wikimedia.org/wikipedia/commons/8/81/Healthy_Banana_Pancakes.jpg",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0"
+        },
+
         "ingredients": [("banana", 1, "pcs"), ("egg", 1, "pcs"), ("flour", 50, "g")],
     },
     {
@@ -171,8 +180,17 @@ FIXTURES = [
         "instructions": "Mix boiled potatoes with chopped egg, mayo and onion. Chill before serving.",
         "prep_minutes": 30,
         "servings": 3,
-        "image_url": "https://picsum.photos/seed/potato_salad/1200/800",
-        "thumbnail_url": "https://picsum.photos/seed/potato_salad/400/267",
+
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/f/fe/Warm_kipfler_potato_salad.jpg",
+        "thumbnail_url": "https://upload.wikimedia.org/wikipedia/commons/f/fe/Warm_kipfler_potato_salad.jpg",
+        "image_meta": {
+            "author": "jules",
+            "page_url": "https://commons.wikimedia.org/wiki/File:Warm_kipfler_potato_salad.jpg",
+            "file_url": "https://upload.wikimedia.org/wikipedia/commons/f/fe/Warm_kipfler_potato_salad.jpg",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0"
+        },
+
         "ingredients": [("potato", 500, "g"), ("egg", 2, "pcs"), ("mayonnaise", 2, "tbsp")],
     },
 ]
