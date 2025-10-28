@@ -10,6 +10,8 @@
         <h5 class="card-title">Enter ingredients you have</h5>
         <p class="card-text">Separate ingredients by comma or newline. Example: <code>egg, milk, flour</code></p>
 
+        <div id="alerts"></div>
+
         <form id="search-form" class="mb-3" method="get" action="/search">
           <div class="mb-2">
             <textarea id="ingredients-input" name="ingredients" class="form-control" rows="3" placeholder="e.g. egg, milk, flour">{{ request.query_params.get('ingredients','') }}</textarea>
@@ -21,15 +23,16 @@
           </div>
         </form>
 
-        <div id="alerts"></div>
       </div>
     </div>
 
     <div id="results" class="row g-3">
-      {% if recipes is not defined %}
-        <div class="col-12"><div class="alert alert-info">No search performed yet.</div></div>
-      {% elif recipes|length == 0 %}
-        <div class="col-12"><div class="alert alert-warning">No recipes found for your ingredients.</div></div>
+    {% set has_query = request.query_params.get('ingredients','')|length > 0 %}
+    {% if not has_query %}
+      <div class="col-12"><div class="alert alert-info">No search performed yet. Use the form above or open <a href="/docs">API docs</a>.</div></div>
+    {% elif recipes is defined and recipes|length == 0 %}
+      <div class="col-12"><div class="alert alert-warning">No recipes found for your ingredients.</div></div>
+
       {% else %}
         {% import "includes/receipt_detail.html" as receipt %}
         {% for r in recipes %}

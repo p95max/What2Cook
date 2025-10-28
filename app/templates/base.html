@@ -14,6 +14,20 @@
 
   {% include "includes/navbar.html" %}
 
+  <div class="container mt-3">
+      {# server-side alerts passed in context as alerts (list of {type,text}) #}
+      {% if alerts is defined and alerts %}
+        {% for a in alerts %}
+          <div class="alert alert-{{ a.type }} alert-dismissible fade show" role="alert">
+            {{ a.text | safe }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <div id="alerts"></div>
+    </div>
+
   <main class="container my-4">
     {% block content %}{% endblock %}
   </main>

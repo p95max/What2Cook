@@ -18,6 +18,7 @@ body { padding-bottom: 60px; }
 
 .card img { display: block; width: 100%; height: auto; max-height: 220px; object-fit: cover; }
 
+/*cards hover effect*/
 @media (hover: hover) and (pointer: fine) {
   .card.position-relative {
     transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
@@ -28,8 +29,8 @@ body { padding-bottom: 60px; }
   .card.position-relative:focus-within {
     transform: translateY(-6px) scale(1.01);
     box-shadow: 0 10px 30px rgba(17,24,39,0.12), 0 4px 8px rgba(17,24,39,0.06);
-    border-color: rgba(13,110,253,0.12); /* subtle bluish accent */
-    z-index: 5; /* bring above neighbours */
+    border-color: rgba(13,110,253,0.12);
+    z-index: 5;
   }
 }
 
