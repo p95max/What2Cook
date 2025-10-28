@@ -20,10 +20,11 @@ function parseInput(text) {
 function renderRecipeCard(r) {
   const imgSrc = r.thumbnail_url || r.image_url || '/static/img/placeholder.png';
   const ingList = r.ingredients ? r.ingredients.map(i => escapeHtml(i)).join(", ") : "";
+  const scoreText = (typeof r.score === "number") ? `Score: ${(r.score*100).toFixed(0)}%` : "";
 
   return `
   <div class="col-12">
-    <div class="card shadow-sm">
+    <div class="card shadow-sm position-relative"> 
       <div class="row g-0">
         <div class="col-md-4">
           <a href="${escapeHtml(r.image_url || '#')}" target="_blank" rel="noopener">
@@ -33,18 +34,17 @@ function renderRecipeCard(r) {
                  decoding="async"
                  onerror="this.onerror=null;this.src='/static/img/placeholder.png';"
                  class="img-fluid rounded-start w-100"
-                 style="height:220px; object-fit:cover;">
+                 style="height:180px; object-fit:cover;">
           </a>
         </div>
         <div class="col-md-8">
           <div class="card-body">
             <h5 class="card-title mb-1">${escapeHtml(r.title)}</h5>
-            <div class="text-muted small mb-2">Score: ${(r.score*100).toFixed(0)}%</div>
+            <div class="text-muted small mb-2">${escapeHtml(scoreText)}</div>
             <p class="mb-2">${escapeHtml((r.instructions || "").slice(0, 160))}${(r.instructions && r.instructions.length > 160) ? '...' : ''}</p>
             <p class="mb-1"><strong>Ingredients:</strong> ${ingList}</p>
-            <div class="mt-2">
-              <a href="${escapeHtml(r.image_url || '#')}" class="btn btn-outline-secondary btn-sm mt-2" target="_blank" rel="noopener">View image</a>
-            </div>
+
+            <a class="stretched-link" href="/recipes/${encodeURIComponent(r.id)}" aria-label="Open recipe details"></a>
           </div>
         </div>
       </div>
@@ -54,19 +54,11 @@ function renderRecipeCard(r) {
 }
 
 
+
 function escapeHtml(str) {
   if (!str) return "";
   return String(str).replace(/[&<>"']/g, function(m) {
     return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m];
-  });
-}
-
-function copyIngredients(arr) {
-  const text = arr.join(", ");
-  navigator.clipboard?.writeText(text).then(() => {
-    showAlert("Ingredients copied to clipboard", "success");
-  }).catch(() => {
-    showAlert("Could not copy to clipboard", "warning");
   });
 }
 

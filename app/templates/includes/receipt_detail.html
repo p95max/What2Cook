@@ -1,0 +1,83 @@
+{% macro recipe_card(r) %}
+<div class="col-12">
+  <div class="card shadow-sm mb-3 position-relative"> {# position-relative для stretched-link #}
+    <div class="row g-0">
+      <div class="col-md-4">
+        <a href="{{ r.image_url or (r.image_meta.file_url if r.image_meta else request.url_for('static', path='img/placeholder.png')) }}" target="_blank" rel="noopener noreferrer">
+          <img src="{{ r.thumbnail_url or r.image_url or request.url_for('static', path='img/placeholder.png') }}"
+               alt="{{ r.title|e }}"
+               class="img-fluid rounded-start w-100"
+               loading="lazy"
+               decoding="async"
+               style="height:180px; object-fit:cover;">
+        </a>
+      </div>
+
+      <div class="col-md-8">
+        <div class="card-body">
+          <h5 class="card-title">{{ r.title|e }}</h5>
+
+          {% if r.score is defined %}
+            <div class="text-muted small mb-2">Score: {{ (r.score * 100) | round(0) }}%</div>
+          {% endif %}
+
+          <p class="mb-2 text-truncate">
+            {{ (r.instructions[:160] ~ '...') if r.instructions and r.instructions|length > 160 else (r.instructions or '') }}
+          </p>
+
+          <p class="mb-1"><strong>Ingredients:</strong> {{ (r.ingredients | join(', ')) | e }}</p>
+
+          <a class="stretched-link" href="{{ request.url_for('recipe_page', recipe_id=r.id) }}" aria-label="Open recipe details"></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+{% macro recipe_detail(r) %}
+{# если вы хотите также генерировать модалку — не обязательно, можно удалить этот макрос #}
+<div class="modal fade" id="recipe-detail-{{ r.id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ r.title|e }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-5">
+            <img src="{{ r.image_url or (r.image_meta.file_url if r.image_meta else request.url_for('static', path='img/placeholder.png')) }}"
+                 alt="{{ r.title|e }}" class="img-fluid w-100 mb-2" style="object-fit:cover; max-height:350px;">
+            {% if r.image_meta %}
+              <div class="small text-muted">
+                {% if r.image_meta.author %}Photo: {{ r.image_meta.author|e }}{% endif %}
+                {% if r.image_meta.license_url %} — <a href="{{ r.image_meta.license_url }}" target="_blank">license</a>{% endif %}
+                {% if r.image_meta.page_url %} — <a href="{{ r.image_meta.page_url }}" target="_blank">source</a>{% endif %}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-7">
+            <p><strong>Prep:</strong> {{ r.prep_minutes or '—' }} min • <strong>Serves:</strong> {{ r.servings or '—' }}</p>
+
+            <h6>Ingredients</h6>
+            <ul>
+              {% for ing in r.ingredients %}
+                <li>{{ ing|e }}</li>
+              {% endfor %}
+            </ul>
+
+            <h6>Instructions</h6>
+            <p style="white-space:pre-line;">{{ r.instructions or '-' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endmacro %}
