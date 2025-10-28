@@ -14,7 +14,7 @@ from fastapi import Request
 import re
 from typing import List
 from fastapi import Query, Depends, HTTPException
-from sqlalchemy import select, func
+from sqlalchemy import select, func, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from app.db import get_session
@@ -90,25 +90,23 @@ async def search(request: Request,
     if user_inputs:
         mapped_names = await _map_input_to_ingredient_names(session, user_inputs)
         if mapped_names:
-            stmt = (
-                select(Recipe)
-                .join(recipe_ingredient)
-                .where(recipe_ingredient.c.ingredient_id.in_(
-                    select(Ingredient.id).where(Ingredient.name.in_(mapped_names))
-                ))
-            )
-            result = await session.execute(stmt)
-            candidates = result.scalars().unique().all()
+            ing_ids_subq = select(Ingredient.id).where(Ingredient.name.in_(mapped_names))
 
-            for rec in candidates:
+            stmt = (
+                select(Recipe, func.count(recipe_ingredient.c.ingredient_id).label("match_count"))
+                .join(recipe_ingredient, recipe_ingredient.c.recipe_id == Recipe.id)
+                .where(recipe_ingredient.c.ingredient_id.in_(ing_ids_subq))
+                .group_by(Recipe.id)
+                .order_by(desc("match_count"), Recipe.title)
+                .limit(max(1, min(100, int(limit or 20))))
+            )
+            res = await session.execute(stmt)
+            rows = res.all()
+            for rec, match_count in rows:
                 ing_stmt = select(Ingredient.name).select_from(recipe_ingredient.join(Ingredient)).where(recipe_ingredient.c.recipe_id == rec.id)
                 ing_res = await session.execute(ing_stmt)
                 rec_ing_names = [row[0] for row in ing_res.fetchall()]
 
-                user_norm = [u.lower() for u in mapped_names]
-                have = sorted([i for i in rec_ing_names if i.lower() in user_norm])
-                missing = sorted([i for i in rec_ing_names if i.lower() not in user_norm])
-                match_count = len(have)
                 total = max(len(rec_ing_names), 1)
                 score = round(match_count / total, 3)
 
@@ -116,9 +114,9 @@ async def search(request: Request,
                     "id": rec.id,
                     "title": rec.title,
                     "score": score,
-                    "match_count": match_count,
-                    "missing": missing,
-                    "have": have,
+                    "match_count": int(match_count),
+                    "missing": sorted([i for i in rec_ing_names if i.lower() not in [u.lower() for u in mapped_names]]),
+                    "have": sorted([i for i in rec_ing_names if i.lower() in [u.lower() for u in mapped_names]]),
                     "ingredients": rec_ing_names,
                     "instructions": rec.instructions,
                     "prep_minutes": rec.prep_minutes,
@@ -129,10 +127,10 @@ async def search(request: Request,
                     "source": rec.source,
                 })
 
-            recipes_out = sorted(recipes_out, key=lambda x: (-x["score"], -x["match_count"], x["title"]))
-            recipes_out = recipes_out[: max(1, min(100, int(limit or 20)))]
-
+    if not user_inputs:
+        return templates.TemplateResponse("search.html", {"request": request})
     return templates.TemplateResponse("search.html", {"request": request, "recipes": recipes_out})
+
 
 @app.get("/recipes/{recipe_id}", include_in_schema=False, name="recipe_page")
 async def recipe_page(request: Request,

@@ -3,7 +3,7 @@ API router exposing improved recipe search endpoints.
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func, desc
 from typing import List
 from app.db import get_session
 from app.models import Ingredient, Recipe, recipe_ingredient
@@ -39,44 +39,51 @@ async def _map_input_to_ingredient_names(session: AsyncSession, user_inputs: Lis
 async def search_recipes(query: IngredientsQuery, session: AsyncSession = Depends(get_session)):
     if not query.ingredients:
         raise HTTPException(status_code=400, detail="ingredients must be provided")
+
     user_ing_names = await _map_input_to_ingredient_names(session, query.ingredients)
     if not user_ing_names:
         return []
+
+    ing_ids_subq = select(Ingredient.id).where(Ingredient.name.in_(user_ing_names))
+
     stmt = (
-        select(Recipe)
-        .join(recipe_ingredient)
-        .where(recipe_ingredient.c.ingredient_id.in_(
-            select(Ingredient.id).where(Ingredient.name.in_(user_ing_names))
-        ))
+        select(
+            Recipe,
+            func.count(recipe_ingredient.c.ingredient_id).label("match_count")
+        )
+        .join(recipe_ingredient, recipe_ingredient.c.recipe_id == Recipe.id)
+        .where(recipe_ingredient.c.ingredient_id.in_(ing_ids_subq))
+        .group_by(Recipe.id)
+        .order_by(desc("match_count"), Recipe.title)
     )
+
     result = await session.execute(stmt)
-    candidates = result.scalars().unique().all()
+    rows = result.all()
     out = []
-    # внутри app/api.py — часть функции search_recipes (заменить старый out.append({...}) на этот)
-    for rec in candidates:
-        ing_stmt = select(Ingredient.name).select_from(recipe_ingredient.join(Ingredient)).where(
-            recipe_ingredient.c.recipe_id == rec.id)
+    for rec, match_count in rows:
+        ing_stmt = select(Ingredient.name).select_from(recipe_ingredient.join(Ingredient)).where(recipe_ingredient.c.recipe_id == rec.id)
         ing_res = await session.execute(ing_stmt)
         rec_ing_names = [row[0] for row in ing_res.fetchall()]
-        rec_ing_norm = [n.lower() for n in rec_ing_names]
-        user_norm = [u.lower() for u in user_ing_names]
-        have = sorted([i for i in rec_ing_names if i.lower() in user_norm])
-        missing = sorted([i for i in rec_ing_names if i.lower() not in user_norm])
-        match_count = len(have)
+
         total = max(len(rec_ing_names), 1)
         score = round(match_count / total, 3)
+
         if score >= (query.min_score or 0.0):
             out.append({
                 "id": rec.id,
                 "title": rec.title,
                 "score": score,
-                "match_count": match_count,
-                "missing": missing,
-                "have": have,
+                "match_count": int(match_count),
+                "missing": sorted([i for i in rec_ing_names if i.lower() not in [u.lower() for u in user_ing_names]]),
+                "have": sorted([i for i in rec_ing_names if i.lower() in [u.lower() for u in user_ing_names]]),
                 "ingredients": rec_ing_names,
-                "image_url": getattr(rec, "image_url", None),
-                "thumbnail_url": getattr(rec, "thumbnail_url", None),
-                "image_meta": getattr(rec, "image_meta", None),
+                "instructions": rec.instructions,
+                "prep_minutes": rec.prep_minutes,
+                "servings": rec.servings,
+                "image_url": rec.image_url,
+                "thumbnail_url": rec.thumbnail_url,
+                "image_meta": rec.image_meta,
+                "source": rec.source,
             })
 
     out_sorted = sorted(out, key=lambda x: (-x["score"], -x["match_count"], x["title"]))
