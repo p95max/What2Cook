@@ -18,24 +18,35 @@ function parseInput(text) {
 }
 
 function renderRecipeCard(r) {
-  const missingList = r.missing.map(i => `<span class="badge bg-danger me-1">${i}</span>`).join(" ");
-  const haveList = r.have.map(i => `<span class="badge bg-success me-1">${i}</span>`).join(" ");
-  const ingList = r.ingredients.join(", ");
+  const imgSrc = r.thumbnail_url || r.image_url || '/static/img/placeholder.png';
+  const missingList = r.missing.map(i => `<span class="badge bg-danger me-1">${escapeHtml(i)}</span>`).join(" ");
+  const haveList = r.have.map(i => `<span class="badge bg-success me-1">${escapeHtml(i)}</span>`).join(" ");
+  const ingList = r.ingredients.map(i => escapeHtml(i)).join(", ");
 
   return `
   <div class="col-12">
-    <div class="card">
-      <div class="card-body">
-        <div class="d-flex align-items-start">
-          <div class="flex-grow-1">
+    <div class="card shadow-sm">
+      <div class="row g-0">
+        <div class="col-md-4">
+          <a href="${escapeHtml(r.image_url || '#')}" target="_blank" rel="noopener">
+            <img src="${escapeHtml(imgSrc)}"
+                 alt="${escapeHtml(r.title)}"
+                 loading="lazy"
+                 decoding="async"
+                 onerror="this.onerror=null;this.src='/static/img/placeholder.png';"
+                 class="img-fluid rounded-start w-100"
+                 style="height:220px; object-fit:cover;">
+          </a>
+        </div>
+        <div class="col-md-8">
+          <div class="card-body">
             <h5 class="card-title mb-1">${escapeHtml(r.title)}</h5>
             <div class="text-muted small mb-2">Score: ${(r.score*100).toFixed(0)}% — have ${r.match_count}/${r.ingredients.length}</div>
-            <p class="mb-1"><strong>Ingredients:</strong> ${escapeHtml(ingList)}</p>
+            <p class="mb-2">${escapeHtml((r.instructions || "").slice(0, 160))}${(r.instructions && r.instructions.length > 160) ? '...' : ''}</p>
+            <p class="mb-1"><strong>Ingredients:</strong> ${ingList}</p>
             <p class="mb-1"><strong>Have:</strong> ${haveList || '<span class="text-muted">none</span>'}</p>
             <p class="mb-1"><strong>Missing:</strong> ${missingList || '<span class="text-muted">none</span>'}</p>
-          </div>
-          <div class="ms-3 text-end">
-            <button class="btn btn-outline-primary btn-sm" onclick="copyIngredients(${JSON.stringify(r.ingredients)})">Copy ingredients</button>
+            <a href="${escapeHtml(r.image_url || '#')}" class="btn btn-outline-secondary btn-sm mt-2" target="_blank" rel="noopener">View image</a>
           </div>
         </div>
       </div>

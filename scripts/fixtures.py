@@ -1,165 +1,120 @@
 """
-Common fixtures loader: insert 10 simple, everyday recipes and ingredients.
+Fixtures loader with external image URLs: insert 10 common recipes and set image_url/thumbnail_url fields.
 """
 import asyncio
 from sqlalchemy import select, insert
-from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import AsyncSessionLocal, init_db
 from app.models import Ingredient, Recipe, recipe_ingredient
 
 FIXTURES = [
     {
         "title": "Scrambled Eggs",
-        "instructions": "Beat eggs with a pinch of salt and pepper. Melt butter in a pan and cook eggs over medium heat, stirring until softly set.",
+        "instructions": "Beat eggs with salt and pepper. Cook in butter until softly set.",
         "prep_minutes": 8,
         "servings": 1,
-        "source": "fixtures_common",
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/2/20/Scrambed_eggs.jpg",
+        "thumbnail_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Scrambed_eggs.jpg/512px-Scrambed_eggs.jpg",
+        "image_meta": {
+            "author": "Takeaway",
+            "page_url": "https://commons.wikimedia.org/wiki/File:Scrambed_eggs.jpg",
+            "file_url": "https://upload.wikimedia.org/wikipedia/commons/2/20/Scrambed_eggs.jpg",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0"
+        },
         "ingredients": [
             ("egg", 3, "pcs"),
             ("butter", 10, "g"),
-            ("salt", None, "to taste"),
-            ("black pepper", None, "to taste"),
-            ("milk", 20, "ml"),
+            ("salt", None, "to taste")
         ],
-    },
+        "source": "wikimedia_commons"
+    }
+    ,
     {
         "title": "Boiled Potatoes with Butter",
-        "instructions": "Boil washed potatoes in salted water until tender. Drain and toss with butter and a pinch of salt. Serve hot.",
+        "instructions": "Boil potatoes until tender. Toss with butter and parsley.",
         "prep_minutes": 25,
         "servings": 2,
-        "source": "fixtures_common",
-        "ingredients": [
-            ("potato", 600, "g"),
-            ("salt", None, "to taste"),
-            ("butter", 20, "g"),
-            ("fresh parsley", None, "to taste"),
-        ],
+        "image_url": "https://picsum.photos/seed/boiled_potatoes/1200/800",
+        "thumbnail_url": "https://picsum.photos/seed/boiled_potatoes/400/267",
+        "ingredients": [("potato", 600, "g"), ("butter", 20, "g"), ("salt", None, "to taste")],
     },
     {
         "title": "Tomato Pasta",
-        "instructions": "Cook pasta according to package. Sauté chopped onion and garlic in oil, add chopped tomatoes, simmer and season. Toss with pasta.",
+        "instructions": "Cook pasta and toss with a simple tomato, garlic and onion sauce.",
         "prep_minutes": 20,
         "servings": 2,
-        "source": "fixtures_common",
-        "ingredients": [
-            ("pasta", 200, "g"),
-            ("tomato", 3, "pcs"),
-            ("onion", 1, "pcs"),
-            ("garlic", 1, "clove"),
-            ("vegetable oil", 1, "tbsp"),
-            ("salt", None, "to taste"),
-            ("black pepper", None, "to taste"),
-        ],
+        "image_url": "https://picsum.photos/seed/tomato_pasta/1200/800",
+        "thumbnail_url": "https://picsum.photos/seed/tomato_pasta/400/267",
+        "ingredients": [("pasta", 200, "g"), ("tomato", 3, "pcs"), ("onion", 1, "pcs"), ("garlic", 1, "clove")],
     },
     {
-        "title": "Rice with Mixed Vegetables",
-        "instructions": "Cook rice. Sauté diced carrot, peas and onion in oil, add cooked rice and soy sauce, stir until heated.",
+        "title": "Rice with Vegetables",
+        "instructions": "Cook rice and stir-fry mixed vegetables, then combine with soy sauce.",
         "prep_minutes": 25,
         "servings": 2,
-        "source": "fixtures_common",
-        "ingredients": [
-            ("rice", 200, "g"),
-            ("carrot", 1, "pcs"),
-            ("frozen peas", 100, "g"),
-            ("onion", 1, "pcs"),
-            ("vegetable oil", 1, "tbsp"),
-            ("soy sauce", 1, "tbsp"),
-            ("salt", None, "to taste"),
-        ],
+        "image_url": "https://picsum.photos/seed/rice_veg/1200/800",
+        "thumbnail_url": "https://picsum.photos/seed/rice_veg/400/267",
+        "ingredients": [("rice", 200, "g"), ("carrot", 1, "pcs"), ("frozen peas", 100, "g"), ("onion", 1, "pcs")],
     },
     {
         "title": "Simple Chicken Soup",
-        "instructions": "Simmer chicken pieces with onion, carrot and celery in water until tender. Season with salt and serve with bread.",
+        "instructions": "Simmer chicken with onion, carrot and celery for a light soup.",
         "prep_minutes": 60,
         "servings": 4,
-        "source": "fixtures_common",
-        "ingredients": [
-            ("chicken pieces", 600, "g"),
-            ("onion", 1, "pcs"),
-            ("carrot", 2, "pcs"),
-            ("celery", 1, "stalk"),
-            ("water", 1500, "ml"),
-            ("salt", None, "to taste"),
-            ("black pepper", None, "to taste"),
-        ],
+        "image_url": "https://picsum.photos/seed/chicken_soup/1200/800",
+        "thumbnail_url": "https://picsum.photos/seed/chicken_soup/400/267",
+        "ingredients": [("chicken pieces", 600, "g"), ("onion", 1, "pcs"), ("carrot", 2, "pcs")],
     },
     {
         "title": "Fresh Vegetable Salad",
-        "instructions": "Chop tomato, cucumber and onion. Toss with olive oil, lemon juice, salt and pepper. Serve fresh.",
+        "instructions": "Chop fresh vegetables and dress with olive oil and lemon.",
         "prep_minutes": 10,
         "servings": 2,
-        "source": "fixtures_common",
-        "ingredients": [
-            ("tomato", 2, "pcs"),
-            ("cucumber", 1, "pcs"),
-            ("onion", 0.5, "pcs"),
-            ("olive oil", 1, "tbsp"),
-            ("lemon", 0.5, "pcs"),
-            ("salt", None, "to taste"),
-            ("black pepper", None, "to taste"),
-        ],
+        "image_url": "https://picsum.photos/seed/fresh_salad/1200/800",
+        "thumbnail_url": "https://picsum.photos/seed/fresh_salad/400/267",
+        "ingredients": [("tomato", 2, "pcs"), ("cucumber", 1, "pcs"), ("onion", 0.5, "pcs"), ("olive oil", 1, "tbsp")],
     },
     {
         "title": "Grilled Cheese Sandwich",
-        "instructions": "Butter two slices of bread, place cheese between them and fry in a pan until golden and the cheese melts.",
+        "instructions": "Butter bread, add cheese and fry until golden and melted.",
         "prep_minutes": 10,
         "servings": 1,
-        "source": "fixtures_common",
-        "ingredients": [
-            ("bread", 2, "slices"),
-            ("cheese", 2, "slices"),
-            ("butter", 10, "g"),
-        ],
+        "image_url": "https://picsum.photos/seed/grilled_cheese/1200/800",
+        "thumbnail_url": "https://picsum.photos/seed/grilled_cheese/400/267",
+        "ingredients": [("bread", 2, "slices"), ("cheese", 2, "slices"), ("butter", 10, "g")],
     },
     {
         "title": "Oatmeal Porridge",
-        "instructions": "Cook rolled oats with milk or water until soft. Add a spoon of sugar or honey and a sliced banana or apple to serve.",
+        "instructions": "Cook oats with milk or water and top with banana or honey.",
         "prep_minutes": 10,
         "servings": 1,
-        "source": "fixtures_common",
-        "ingredients": [
-            ("rolled oats", 60, "g"),
-            ("milk", 200, "ml"),
-            ("sugar", 1, "tbsp"),
-            ("banana", 1, "pcs"),
-            ("salt", None, "pinch"),
-        ],
+        "image_url": "https://picsum.photos/seed/oatmeal/1200/800",
+        "thumbnail_url": "https://picsum.photos/seed/oatmeal/400/267",
+        "ingredients": [("rolled oats", 60, "g"), ("milk", 200, "ml"), ("banana", 1, "pcs")],
     },
     {
         "title": "Banana Pancakes",
-        "instructions": "Mash banana, mix with an egg and a little flour to make batter. Fry small pancakes until golden on both sides.",
+        "instructions": "Mash banana, mix with egg and a little flour, fry small pancakes.",
         "prep_minutes": 15,
         "servings": 2,
-        "source": "fixtures_common",
-        "ingredients": [
-            ("banana", 1, "pcs"),
-            ("egg", 1, "pcs"),
-            ("flour", 50, "g"),
-            ("vegetable oil", 1, "tbsp"),
-            ("salt", None, "pinch"),
-        ],
+        "image_url": "https://picsum.photos/seed/banana_pancakes/1200/800",
+        "thumbnail_url": "https://picsum.photos/seed/banana_pancakes/400/267",
+        "ingredients": [("banana", 1, "pcs"), ("egg", 1, "pcs"), ("flour", 50, "g")],
     },
     {
         "title": "Potato Salad",
-        "instructions": "Boil potatoes, cool and chop. Mix with chopped onion, boiled egg, a spoon of mayo, salt and pepper. Chill before serving.",
+        "instructions": "Mix boiled potatoes with chopped egg, mayo and onion. Chill before serving.",
         "prep_minutes": 30,
         "servings": 3,
-        "source": "fixtures_common",
-        "ingredients": [
-            ("potato", 500, "g"),
-            ("egg", 2, "pcs"),
-            ("onion", 0.5, "pcs"),
-            ("mayonnaise", 2, "tbsp"),
-            ("salt", None, "to taste"),
-            ("black pepper", None, "to taste"),
-        ],
+        "image_url": "https://picsum.photos/seed/potato_salad/1200/800",
+        "thumbnail_url": "https://picsum.photos/seed/potato_salad/400/267",
+        "ingredients": [("potato", 500, "g"), ("egg", 2, "pcs"), ("mayonnaise", 2, "tbsp")],
     },
 ]
 
-
 async def load_fixtures() -> None:
     await init_db()
-    async with AsyncSessionLocal() as session:  # type: AsyncSession
+    async with AsyncSessionLocal() as session:
         for item in FIXTURES:
             ing_objs = []
             for name, qty, unit in item["ingredients"]:
@@ -175,7 +130,9 @@ async def load_fixtures() -> None:
                 instructions=item["instructions"],
                 prep_minutes=item.get("prep_minutes"),
                 servings=item.get("servings"),
-                source=item.get("source"),
+                image_url=item.get("image_url"),
+                thumbnail_url=item.get("thumbnail_url"),
+                source="fixtures_with_external_images",
             )
             session.add(recipe)
             await session.flush()
@@ -186,8 +143,7 @@ async def load_fixtures() -> None:
                     )
                 )
         await session.commit()
-    print("Loaded fixtures:", len(FIXTURES))
-
+    print("Loaded fixtures with external images:", len(FIXTURES))
 
 if __name__ == "__main__":
     asyncio.run(load_fixtures())
