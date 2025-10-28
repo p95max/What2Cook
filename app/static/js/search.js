@@ -19,9 +19,7 @@ function parseInput(text) {
 
 function renderRecipeCard(r) {
   const imgSrc = r.thumbnail_url || r.image_url || '/static/img/placeholder.png';
-  const missingList = r.missing.map(i => `<span class="badge bg-danger me-1">${escapeHtml(i)}</span>`).join(" ");
-  const haveList = r.have.map(i => `<span class="badge bg-success me-1">${escapeHtml(i)}</span>`).join(" ");
-  const ingList = r.ingredients.map(i => escapeHtml(i)).join(", ");
+  const ingList = r.ingredients ? r.ingredients.map(i => escapeHtml(i)).join(", ") : "";
 
   return `
   <div class="col-12">
@@ -41,12 +39,12 @@ function renderRecipeCard(r) {
         <div class="col-md-8">
           <div class="card-body">
             <h5 class="card-title mb-1">${escapeHtml(r.title)}</h5>
-            <div class="text-muted small mb-2">Score: ${(r.score*100).toFixed(0)}% — have ${r.match_count}/${r.ingredients.length}</div>
+            <div class="text-muted small mb-2">Score: ${(r.score*100).toFixed(0)}%</div>
             <p class="mb-2">${escapeHtml((r.instructions || "").slice(0, 160))}${(r.instructions && r.instructions.length > 160) ? '...' : ''}</p>
             <p class="mb-1"><strong>Ingredients:</strong> ${ingList}</p>
-            <p class="mb-1"><strong>Have:</strong> ${haveList || '<span class="text-muted">none</span>'}</p>
-            <p class="mb-1"><strong>Missing:</strong> ${missingList || '<span class="text-muted">none</span>'}</p>
-            <a href="${escapeHtml(r.image_url || '#')}" class="btn btn-outline-secondary btn-sm mt-2" target="_blank" rel="noopener">View image</a>
+            <div class="mt-2">
+              <a href="${escapeHtml(r.image_url || '#')}" class="btn btn-outline-secondary btn-sm mt-2" target="_blank" rel="noopener">View image</a>
+            </div>
           </div>
         </div>
       </div>
@@ -54,6 +52,7 @@ function renderRecipeCard(r) {
   </div>
   `;
 }
+
 
 function escapeHtml(str) {
   if (!str) return "";

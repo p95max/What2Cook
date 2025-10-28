@@ -92,7 +92,6 @@
                         <h5 class="card-title mb-1">{{ r.title | e }}</h5>
                         <div class="text-muted small mb-2">
                           {% if r.score is defined %}Score: {{ (r.score * 100) | round(0) }}% —{% endif %}
-                          have {{ r.match_count | default(0) }}/{{ (r.ingredients | length) | default(0) }}
                         </div>
 
                         <p class="mb-2 text-truncate" style="max-width:100%;">{{ (r.instructions[:240] ~ '...') if r.instructions and r.instructions|length > 240 else (r.instructions or '') }}</p>
