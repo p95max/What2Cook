@@ -1,5 +1,5 @@
 """
-Fixtures loader with external image URLs (Wikimedia etc).
+Fixtures loader with external image URLs (Wikimedia etc.).
 Usage:
   docker compose exec -e PYTHONPATH=/app web python fixtures/recipes_fixtures.py
 """
