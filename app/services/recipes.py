@@ -92,5 +92,6 @@ async def search_recipes(session: AsyncSession, mapped_names: List[str], limit: 
             "thumbnail_url": rec.thumbnail_url,
             "image_meta": rec.image_meta,
             "source": rec.source,
+            "likes_count": getattr(rec, "likes_count", 0),
         })
     return out
