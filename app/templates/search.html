@@ -1,4 +1,3 @@
-{# app/templates/search.html #}
 {% extends "base.html" %}
 
 {% block title %}Search — What2Cook{% endblock %}
@@ -8,26 +7,36 @@
   <div class="col-lg-8">
     <div class="card mb-4">
       <div class="card-body">
-        <h5 class="card-title">Available ingredients</h5>
-        <p class="card-text">Click an ingredient to see recipes that contain it. You can click multiple ingredients (they will be appended to the query string).</p>
+        <h4 class="card-title">Search by available ingredients</h4>
+        <p class="card-text">Click ingredient buttons to search. You can select multiple ingredients — results update automatically.</p>
 
         <div id="ingredients-list" class="mb-3 d-flex flex-wrap gap-2">
           {% if ingredients is defined and ingredients %}
             {% for ing in ingredients %}
-              <a href="/search?ingredients={{ ing|urlencode }}" class="btn btn-outline-secondary btn-sm" role="button" title="Search recipes with {{ ing }}">
+              <button type="button"
+                      class="btn btn-outline-secondary btn-sm ingredient-btn"
+                      data-ingredient="{{ ing|e }}"
+                      aria-pressed="false"
+                      title="Toggle ingredient {{ ing }}">
                 {{ ing }}
-              </a>
+              </button>
             {% endfor %}
           {% else %}
             <div class="text-muted">No ingredients found in database.</div>
           {% endif %}
         </div>
 
+        <!-- moved clear button below the ingredient list and made it red -->
+        <div class="mt-2">
+          <button id="clear-ingredients-btn" class="btn btn-sm btn-danger">Clear selection</button>
+          <span class="text-muted small ms-2">Selected will be added to query and searched automatically.</span>
+        </div>
+
       </div>
     </div>
 
     <div id="results" class="row g-3">
-      {% set has_query = request.query_params.get('ingredients','')|length > 0 %}
+      {% set has_query = request.query_params.get('ingredient','')|length > 0 %}
       {% if not has_query %}
         <div class="col-12">
           <div class="alert alert-info">
@@ -51,4 +60,127 @@
 
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+/*
+  Multi-select ingredients UI:
+  - toggles .active on buttons
+  - fetches /api/recipes/search_simple?ingredient=...
+  - reuses renderResults() from search.js
+*/
+
+document.addEventListener('DOMContentLoaded', () => {
+  const container = document.getElementById('ingredients-list');
+  const resultsEl = document.getElementById('results');
+  const clearBtn = document.getElementById('clear-ingredients-btn');
+  if (!container) return;
+
+  const selected = new Set();
+
+  function getButtons() {
+    return Array.from(container.querySelectorAll('.ingredient-btn'));
+  }
+
+  function updateUrl() {
+    const params = new URLSearchParams();
+    for (const v of selected) params.append('ingredient', v);
+    const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+    history.replaceState(null, '', newUrl);
+  }
+
+  async function fetchAndRender() {
+    if (selected.size === 0) {
+      resultsEl.innerHTML = `<div class="col-12"><div class="alert alert-info">No search performed yet. Click an ingredient above to start searching.</div></div>`;
+      return;
+    }
+
+    const params = new URLSearchParams();
+    for (const v of selected) params.append('ingredient', v);
+
+    try {
+      const res = await fetch('/api/recipes/search_simple?' + params.toString(), {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      });
+
+      if (!res.ok) {
+        console.warn('Ingredients search failed', res.status);
+        resultsEl.innerHTML = `<div class="col-12"><div class="alert alert-danger">Search failed (status ${res.status}).</div></div>`;
+        return;
+      }
+
+      const json = await res.json();
+      if (typeof renderResults === 'function') {
+        renderResults(json);
+      } else {
+        resultsEl.innerHTML = `<div class="col-12"><pre>${JSON.stringify(json, null, 2)}</pre></div>`;
+      }
+    } catch (err) {
+      console.error('fetchAndRender error', err);
+      resultsEl.innerHTML = `<div class="col-12"><div class="alert alert-danger">Network/search error.</div></div>`;
+    }
+  }
+
+  function toggleIngredient(name, btnEl, triggerFetch = true) {
+    if (selected.has(name)) {
+      selected.delete(name);
+      btnEl.classList.remove('active');
+      btnEl.setAttribute('aria-pressed', 'false');
+    } else {
+      selected.add(name);
+      btnEl.classList.add('active');
+      btnEl.setAttribute('aria-pressed', 'true');
+    }
+    updateUrl();
+    if (triggerFetch) fetchAndRender();
+  }
+
+  getButtons().forEach(btn => {
+    const name = btn.getAttribute('data-ingredient');
+    btn.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      toggleIngredient(name, btn, true);
+    });
+  });
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      selected.clear();
+      getButtons().forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed','false'); });
+      updateUrl();
+      fetchAndRender();
+    });
+  }
+
+  const initParams = new URLSearchParams(window.location.search);
+  const urlIngredients = initParams.getAll('ingredient');
+  if (urlIngredients && urlIngredients.length > 0) {
+    getButtons().forEach(b => {
+      const v = b.getAttribute('data-ingredient');
+      if (urlIngredients.includes(v)) {
+        selected.add(v);
+        b.classList.add('active');
+        b.setAttribute('aria-pressed','true');
+      }
+    });
+    fetchAndRender();
+  }
+
+});
+</script>
+
+<style>
+.ingredient-btn.active {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(2,6,23,0.12);
+  background-color: var(--bs-secondary);
+  color: #fff;
+  border-color: var(--bs-secondary);
+}
+</style>
 {% endblock %}
