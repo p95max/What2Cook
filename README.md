@@ -1,7 +1,11 @@
 # What2Cook
 
-[![Tests](https://img.shields.io/badge/tests-pytest-blue)](#)
 [![Python](https://img.shields.io/badge/python-3.14-blue)](#)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Framework-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![Async](https://img.shields.io/badge/async-asyncio-306998?logo=python&logoColor=white)](https://docs.python.org/3/library/asyncio.html)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![Docker](https://img.shields.io/badge/Docker-Container-2496ED?logo=docker&logoColor=white)](https://www.docker.com)
+
 
 **What2Cook** — lightweight recipe finder: give it the ingredients you have and it will suggest recipes.
 Built with **FastAPI**, **async SQLAlchemy**, **Postgres**, **Jinja2 templates** and a small, responsive frontend.
