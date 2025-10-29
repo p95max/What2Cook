@@ -1,13 +1,15 @@
-# app/api/recipes.py
 import re
 from typing import List, Optional
-
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, insert, func, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
-
+from fastapi import APIRouter, Request, Response, Depends, HTTPException
+from sqlalchemy import select, delete
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.db import get_session
+from app.models.anon import AnonUser, RecipeAction
 from app.db import get_session
 from app.schemas import RecipeSearchOut
 from app.services.recipes import list_recipes, get_recipe, search_recipes
@@ -15,6 +17,7 @@ from app.utils.mapping import map_input_to_ingredient_names
 from app.models import Recipe, Ingredient
 from app.models.anon import RecipeAction
 from app.deps import get_or_create_anon_user
+import logging
 
 router = APIRouter(prefix="/recipes", tags=["recipes"])
 
@@ -246,4 +249,89 @@ async def api_get_bookmarks(
         }
 
     return [to_out(r) for r in recipes]
+
+
+logger = logging.getLogger(__name__)
+
+@router.post("/clear", response_model=dict)
+async def clear_anon_data(request: Request, response: Response, session: AsyncSession = Depends(get_session)):
+
+    if request.headers.get("X-Requested-With") != "XMLHttpRequest":
+        raise HTTPException(status_code=400, detail="Bad request")
+
+    anon_cookie = request.cookies.get("anon_id")
+    if not anon_cookie:
+        response.status_code = 204
+        return {"status": "no_anon"}
+
+    try:
+        cols = {c.name for c in AnonUser.__table__.columns}
+    except Exception as e:
+        logger.exception("Failed to introspect AnonUser.__table__")
+        cols = set()
+
+    logger.debug("AnonUser columns: %s", sorted(cols))
+
+    anon = None
+
+    if "id" in cols:
+        try:
+            maybe_id = int(anon_cookie)
+            q = await session.execute(select(AnonUser).where(AnonUser.id == maybe_id))
+            anon = q.scalars().first()
+            if anon:
+                logger.info("Found AnonUser by numeric id column")
+        except Exception:
+            pass
+
+    if not anon:
+        candidates = [
+            "anon_id", "anon_token", "token", "token_value", "token_hash",
+            "cookie", "cookie_value", "uuid", "uid", "key", "value", "secret"
+        ]
+        for name in candidates:
+            if name in cols and hasattr(AnonUser, name):
+                try:
+                    col = getattr(AnonUser, name)
+                    q = await session.execute(select(AnonUser).where(col == anon_cookie))
+                    anon = q.scalars().first()
+                    if anon:
+                        logger.info("Found AnonUser by column '%s'", name)
+                        break
+                except Exception:
+                    logger.debug("Failed query by candidate column %s", name, exc_info=True)
+
+    if not anon:
+        for colname in cols:
+            if colname == "id":
+                continue
+            if not hasattr(AnonUser, colname):
+                continue
+            try:
+                col = getattr(AnonUser, colname)
+                q = await session.execute(select(AnonUser).where(col == anon_cookie))
+                anon = q.scalars().first()
+                if anon:
+                    logger.info("Found AnonUser by fallback column '%s'", colname)
+                    break
+            except Exception:
+                continue
+
+    if not anon:
+        logger.info("AnonUser not found for cookie value; available columns: %s", sorted(cols))
+        response.delete_cookie("anon_id", path="/", samesite="Lax")
+        response.status_code = 204
+        return {"status": "no_anon", "available_columns": sorted(cols)}
+
+    try:
+        await session.execute(delete(RecipeAction).where(RecipeAction.anon_user_id == anon.id))
+        await session.execute(delete(AnonUser).where(AnonUser.id == anon.id))
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        logger.exception("Failed to delete AnonUser and RecipeAction for anon id %s", getattr(anon, "id", "<unknown>"))
+        raise HTTPException(status_code=500, detail="Unable to delete anon data")
+
+    response.delete_cookie("anon_id", path="/", samesite="Lax")
+    return {"status": "deleted"}
 
