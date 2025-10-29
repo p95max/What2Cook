@@ -512,6 +512,18 @@ colors = ["colorama"]
 plugins = ["setuptools"]
 
 [[package]]
+name = "itsdangerous"
+version = "2.2.0"
+description = "Safely pass data to untrusted environments and back."
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "itsdangerous-2.2.0-py3-none-any.whl", hash = "sha256:c6242fc49e35958c8b15141343aa660db5fc54d4f13a1db01a3f5891b98700ef"},
+    {file = "itsdangerous-2.2.0.tar.gz", hash = "sha256:e0050c0b7da1eea53ffaf149c0cfbb5c6e2e2b69c4bef22c81fa6eb73e5f6173"},
+]
+
+[[package]]
 name = "jinja2"
 version = "3.1.6"
 description = "A very fast and expressive template engine."
@@ -1760,4 +1772,4 @@ fuzzy = ["rapidfuzz"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.14,<4.0"
-content-hash = "7a14847eb12b82402457754db6622f62671c55647b4065a0f6d89dcdde22cbec"
+content-hash = "3e90e3324d648d5a9b0fcbeec2d6b1ecdf1e4183dcffc85fd1b121f332b10e85"

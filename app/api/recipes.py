@@ -1,15 +1,26 @@
+# app/api/recipes.py
 import re
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, delete, insert, func
+from sqlalchemy.exc import IntegrityError
 
 from app.db import get_session
 from app.schemas import RecipeSearchOut
 from app.services.recipes import list_recipes, get_recipe, search_recipes
 from app.utils.mapping import map_input_to_ingredient_names
 
-router = APIRouter(prefix="/api/recipes", tags=["recipes"])
+# models for actions
+from app.models import Recipe, Ingredient  # ensure Recipe is available for existence checks
+# direct import for RecipeAction model (created earlier)
+from app.models.anon import RecipeAction
+
+# dependency helper to create/get anon user
+from app.deps import get_or_create_anon_user
+
+router = APIRouter(prefix="/recipes", tags=["recipes"])  # note: prefix "/recipes" — main includes router under /api
 
 _SPLIT_RE = re.compile(r'[,\\n]+')
 
@@ -44,10 +55,6 @@ async def api_search(
 ):
     """
     Search recipes by a free-text ingredients list.
-
-    - `ingredients` must be provided (comma or newline separated).
-    - `map_input_to_ingredient_names` maps user inputs to canonical DB ingredient names.
-    - Results come from service.search_recipes and are filtered by min_score and paginated here.
     """
     raw = (ingredients or "").strip()
     if not raw:
@@ -76,3 +83,93 @@ async def api_search(
     start = (page_num - 1) * per_page
     end = start + per_page
     return results[start:end]
+
+
+# ----------------- Anonymous actions endpoints -----------------
+
+@router.get("/{recipe_id}/actions", response_model=dict)
+async def recipe_actions(
+    recipe_id: int,
+    request: Request,
+    response: Response,
+    session: AsyncSession = Depends(get_session),
+):
+    """
+    Return actions state for current anon user and global likes_count:
+    { liked: bool, bookmarked: bool, likes_count: int }
+    """
+    q = await session.execute(select(Recipe).where(Recipe.id == recipe_id))
+    if not q.scalars().first():
+        raise HTTPException(status_code=404, detail="Recipe not found")
+
+    anon = await get_or_create_anon_user(request, response, session)
+
+    # liked?
+    q = await session.execute(
+        select(RecipeAction).where(
+            RecipeAction.anon_user_id == anon.id,
+            RecipeAction.recipe_id == recipe_id,
+            RecipeAction.action_type == "like",
+        )
+    )
+    liked = q.scalars().first() is not None
+
+    q2 = await session.execute(
+        select(RecipeAction).where(
+            RecipeAction.anon_user_id == anon.id,
+            RecipeAction.recipe_id == recipe_id,
+            RecipeAction.action_type == "bookmark",
+        )
+    )
+    bookmarked = q2.scalars().first() is not None
+
+    cnt_q = await session.execute(
+        select(func.count()).select_from(RecipeAction).where(
+            RecipeAction.recipe_id == recipe_id, RecipeAction.action_type == "like"
+        )
+    )
+    likes_count = int(cnt_q.scalar_one() or 0)
+
+    return {"liked": liked, "bookmarked": bookmarked, "likes_count": likes_count}
+
+
+@router.post("/{recipe_id}/like", response_model=dict)
+async def toggle_like(
+    recipe_id: int,
+    request: Request,
+    response: Response,
+    session: AsyncSession = Depends(get_session),
+):
+    """
+    Toggle like for current anon user.
+    Returns {"status":"liked"} or {"status":"unliked"}.
+    """
+    q = await session.execute(select(Recipe).where(Recipe.id == recipe_id))
+    if not q.scalars().first():
+        raise HTTPException(status_code=404, detail="Recipe not found")
+
+    anon = await get_or_create_anon_user(request, response, session)
+
+    q = await session.execute(
+        select(RecipeAction).where(
+            RecipeAction.anon_user_id == anon.id,
+            RecipeAction.recipe_id == recipe_id,
+            RecipeAction.action_type == "like",
+        )
+    )
+    existing = q.scalars().first()
+    if existing:
+        await session.execute(delete(RecipeAction).where(RecipeAction.id == existing.id))
+        await session.commit()
+        return {"status": "unliked"}
+
+    try:
+        stmt = insert(RecipeAction).values(
+            anon_user_id=anon.id, recipe_id=recipe_id, action_type="like"
+        )
+        await session.execute(stmt)
+        await session.commit()
+        return {"status": "liked"}
+    except IntegrityError:
+        await session.rollback()
+        return {"status": "liked"}

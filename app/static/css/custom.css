@@ -44,3 +44,13 @@ body { padding-bottom: 60px; }
   .card.position-relative:hover { transform: none !important; box-shadow: 0 6px 16px rgba(17,24,39,0.08); }
 }
 
+/*Like button*/
+.like-btn.active {
+  background-color: #0d6efd;
+  color: #fff;
+  border-color: #0d6efd;
+}
+.like-btn .bi { margin-right: 6px; }
+
+
+
