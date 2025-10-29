@@ -153,3 +153,5 @@ alembic/__pycache__/
 
 # Local configuration files
 .local/
+
+false

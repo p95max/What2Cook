@@ -10,8 +10,16 @@ docker compose restart web
 docker compose exec web alembic revision --autogenerate -m "init"
 docker compose exec web alembic upgrade head
 
+docker compose exec web alembic heads
+docker compose exec -e PYTHONPATH=/app web alembic current
+docker compose exec web ls -la alembic/versions
+
 # fixtures for db
 docker compose exec -e PYTHONPATH=/app web python fixtures/recipes_fixtures.py
+
+
+
+
 
 
 
