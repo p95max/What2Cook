@@ -1,5 +1,37 @@
 {% extends "base.html" %}
 
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+  <style>
+    .recipe-card {
+      border: 0;
+      transition: transform .18s ease, box-shadow .18s ease;
+      will-change: transform;
+    }
+    .recipe-card:hover,
+    .recipe-card:focus-within {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    }
+    .recipe-thumb {
+      height: 160px;
+      object-fit: cover;
+      width: 100%;
+      border-radius: .375rem;
+    }
+    .swiper-wrapper {
+      padding: 1rem 0;
+    }
+    .swiper-button-next, .swiper-button-prev {
+      color: #111;
+    }
+    @media (max-width: 576px) {
+      .recipe-thumb { height: 120px; }
+    }
+  </style>
+{% endblock %}
+
 {% block title %}What2Cook — Home{% endblock %}
 
 {% block content %}
@@ -13,10 +45,14 @@
           Tell us what’s in your kitchen and we’ll suggest recipes — fast and without registration.<br>
           Your likes and bookmarks are stored only in your browser (cookies).
         </p>
-
       </div>
     </div>
-
+  {% include "includes/carousel_index.html" %}
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
 {% endblock %}
