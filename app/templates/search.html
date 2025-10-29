@@ -1,3 +1,4 @@
+{# app/templates/search.html #}
 {% extends "base.html" %}
 
 {% block title %}Search — What2Cook{% endblock %}
@@ -13,7 +14,7 @@
         <div id="ingredients-list" class="mb-3 d-flex flex-wrap gap-2">
           {% if ingredients is defined and ingredients %}
             {% for ing in ingredients %}
-              <a href="/recipes/search_simple?ingredient={{ ing|urlencode }}" class="btn btn-outline-secondary btn-sm" role="button" title="Search recipes with {{ ing }}">
+              <a href="/search?ingredients={{ ing|urlencode }}" class="btn btn-outline-secondary btn-sm" role="button" title="Search recipes with {{ ing }}">
                 {{ ing }}
               </a>
             {% endfor %}
@@ -26,7 +27,7 @@
     </div>
 
     <div id="results" class="row g-3">
-      {% set has_query = request.query_params.get('ingredient','')|length > 0 %}
+      {% set has_query = request.query_params.get('ingredients','')|length > 0 %}
       {% if not has_query %}
         <div class="col-12">
           <div class="alert alert-info">

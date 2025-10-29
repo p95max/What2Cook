@@ -17,7 +17,7 @@ from app.deps import get_or_create_anon_user
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/recipes", tags=["recipes"])
+router = APIRouter(prefix="", tags=["recipes"])
 
 _SPLIT_RE = re.compile(r'[,\n]+')
 
@@ -30,13 +30,15 @@ async def api_ingredients(
     limit: int = Query(1000, ge=1, le=5000),
     session: AsyncSession = Depends(get_session),
 ):
-    stmt = select(Ingredient.name).distinct()
+    stmt = select(Ingredient.name)
     if q:
         stmt = stmt.where(func.lower(Ingredient.name).like(f"{q.lower()}%"))
     stmt = stmt.order_by(func.lower(Ingredient.name)).limit(limit)
+
     res = await session.execute(stmt)
     names = [row[0] for row in res.all() if row and row[0] is not None]
     return names
+
 
 
 @router.get("/search_simple")
