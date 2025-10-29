@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, insert, func, update
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import selectinload
 
 from app.db import get_session
 from app.schemas import RecipeSearchOut
@@ -203,3 +204,46 @@ async def toggle_bookmark(
     except IntegrityError:
         await session.rollback()
         return {"status": "bookmarked"}
+
+@router.get("/bookmarks", response_model=list)
+async def api_get_bookmarks(
+    request: Request,
+    response: Response,
+    session: AsyncSession = Depends(get_session),
+):
+    """
+    Return list of bookmarked recipes for current anon user.
+    """
+    anon = await get_or_create_anon_user(request, response, session)
+
+    stmt = (
+        select(Recipe)
+        .join(RecipeAction, RecipeAction.recipe_id == Recipe.id)
+        .where(
+            RecipeAction.anon_user_id == anon.id,
+            RecipeAction.action_type == "bookmark",
+        )
+        .options(selectinload(Recipe.ingredients))
+        .order_by(RecipeAction.created_at.desc())
+    )
+
+    res = await session.execute(stmt)
+    recipes = res.scalars().unique().all()
+
+    def to_out(rec):
+        return {
+            "id": rec.id,
+            "title": rec.title,
+            "instructions": rec.instructions,
+            "prep_minutes": rec.prep_minutes,
+            "servings": rec.servings,
+            "source": rec.source,
+            "image_url": rec.image_url,
+            "thumbnail_url": rec.thumbnail_url,
+            "image_meta": rec.image_meta,
+            "ingredients": [ing.name for ing in getattr(rec, "ingredients", [])] if getattr(rec, "ingredients", None) else [],
+            "likes_count": getattr(rec, "likes_count", 0),
+        }
+
+    return [to_out(r) for r in recipes]
+

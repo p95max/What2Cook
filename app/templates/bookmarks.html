@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Bookmarks — What2Cook{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-10">
+    <div class="card mb-4">
+      <div class="card-body">
+        <h1 class="h5 mb-0">Your saved recipes</h1>
+        <p class="text-muted small mb-2">Recipes you saved in bookmarks (stored in your browser cookie).</p>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      {% if recipes is not defined or recipes|length == 0 %}
+        <div class="col-12">
+          <div class="alert alert-info">You have no saved recipes yet. Browse recipes and click the save button.</div>
+        </div>
+      {% else %}
+        {% import "includes/receipt_detail.html" as receipt %}
+        {# receipt.recipe_card expects r to be a dict like in search/list #}
+        {% for r in recipes %}
+          {{ receipt.recipe_card(r) }}
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

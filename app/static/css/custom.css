@@ -1,3 +1,12 @@
+:root{
+  --bs-primary: #0d6efd;
+  --bs-secondary: #6c757d;
+  --bs-success: #198754;
+  --shadow-primary: rgba(13,110,253,0.18);
+  --shadow-secondary: rgba(108,117,125,0.14);
+  --shadow-success: rgba(25,135,84,0.16);
+}
+
 body { padding-bottom: 60px; }
 
 .card-title { font-size: 1.1rem; }
@@ -6,11 +15,25 @@ body { padding-bottom: 60px; }
 
 .card { overflow: hidden; }
 
-.card .card-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;
-    white-space: normal; margin-bottom: 0.25rem; }
+.card .card-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  margin-bottom: 0.25rem;
+}
 
-.card .card-body p, .card .card-body .small.text-truncate { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
-    overflow: hidden; text-overflow: ellipsis; white-space: normal; }
+.card .card-body p,
+.card .card-body .small.text-truncate {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+}
 
 .card .card-body { overflow-wrap: anywhere; word-break: break-word; }
 
@@ -18,7 +41,6 @@ body { padding-bottom: 60px; }
 
 .card img { display: block; width: 100%; height: auto; max-height: 220px; object-fit: cover; }
 
-/*cards hover effect*/
 @media (hover: hover) and (pointer: fine) {
   .card.position-relative {
     transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
@@ -44,16 +66,111 @@ body { padding-bottom: 60px; }
   .card.position-relative:hover { transform: none !important; box-shadow: 0 6px 16px rgba(17,24,39,0.08); }
 }
 
-/*Like button*/
-.like-btn.active {
-  background-color: #0d6efd;
-  color: #fff;
-  border-color: #0d6efd;
+.btn {
+  transition: transform .12s ease, box-shadow .18s ease, background-color .12s ease, color .12s ease;
+  will-change: transform, box-shadow, background-color;
 }
-.like-btn .bi { margin-right: 6px; }
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 .25rem rgba(13,110,253,0.18);
+}
+
+.btn:active {
+  transform: translateY(0) scale(.98);
+  box-shadow: none;
+  transition-duration: .08s;
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus {
+  background-color: var(--bs-secondary);
+  color: #fff;
+  border-color: var(--bs-secondary);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 22px var(--shadow-secondary);
+}
+
+.like-btn {
+  color: var(--bs-primary);
+  border-color: var(--bs-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.like-btn .bi {
+  transition: transform .12s ease, color .12s ease;
+  display: inline-block;
+  line-height: 1;
+  margin-right: 6px;
+}
+
+.like-btn:hover,
+.like-btn:focus {
+  background-color: var(--bs-primary);
+  color: #fff;
+  border-color: var(--bs-primary);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px var(--shadow-primary);
+}
+
+.like-btn:hover .bi,
+.like-btn:focus .bi {
+  transform: scale(1.18) rotate(-12deg);
+  color: #fff;
+}
+
+.like-btn.liked,
+.like-btn.active {
+  background-color: #ff6b6b;
+  border-color: #ff6b6b;
+  color: #fff;
+  box-shadow: 0 12px 30px rgba(255,107,107,0.18);
+}
+
+.like-btn.liked .bi,
+.like-btn.active .bi {
+  color: #fff;
+  transform: scale(1.12);
+}
+
+.bookmark-btn {
+  color: var(--bs-success);
+  border-color: var(--bs-success);
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.bookmark-btn:hover,
+.bookmark-btn:focus {
+  background-color: var(--bs-success);
+  color: #fff;
+  border-color: var(--bs-success);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px var(--shadow-success);
+}
+
+.bookmark-btn .bi {
+  transition: transform .12s ease, color .12s ease;
+}
+
+.bookmark-btn:hover .bi {
+  transform: scale(1.08);
+  color: #fff;
+}
+
+.bookmark-btn.bookmarked {
+  background-color: #0b8450;
+  border-color: #0b8450;
+  color: #fff;
+  box-shadow: 0 12px 30px rgba(11,132,80,0.16);
+}
 
 .btn .like-label { line-height: 1; }
-.btn small#likes-count-{{ recipe.id }} { line-height: 1; font-size: 0.85rem; }
+
+.btn small[id^="likes-count-"] { line-height: 1; font-size: 0.85rem; }
 
 .like-btn small {
   font-size: 0.85rem;
@@ -65,4 +182,10 @@ body { padding-bottom: 60px; }
   text-align: center;
 }
 
-
+@media (prefers-color-scheme: dark) {
+  :root {
+    --shadow-primary: rgba(13,110,253,0.26);
+    --shadow-secondary: rgba(108,117,125,0.22);
+    --shadow-success: rgba(25,135,84,0.22);
+  }
+}
