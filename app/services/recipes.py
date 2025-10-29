@@ -25,6 +25,7 @@ async def list_recipes(session: AsyncSession, page: int = 1, per_page: int = PER
             "thumbnail_url": rec.thumbnail_url,
             "image_meta": rec.image_meta,
             "ingredients": [ing.name for ing in getattr(rec, "ingredients", [])] if getattr(rec, "ingredients", None) else [],
+            "likes_count": getattr(rec, "likes_count", 0)
         }
 
     return {
@@ -51,7 +52,8 @@ async def get_recipe(session: AsyncSession, recipe_id: int) -> Optional[Dict]:
         "image_url": rec.image_url,
         "thumbnail_url": rec.thumbnail_url,
         "image_meta": rec.image_meta,
-        "ingredients": [ing.name for ing in getattr(rec, "ingredients", [])] if getattr(rec, "ingredients", None) else []
+        "ingredients": [ing.name for ing in getattr(rec, "ingredients", [])] if getattr(rec, "ingredients", None) else [],
+        "likes_count": getattr(rec, "likes_count", 0)
     }
 
 async def search_recipes(session: AsyncSession, mapped_names: List[str], limit: int = 20) -> List[Dict]:

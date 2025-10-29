@@ -1,10 +1,15 @@
 // app/static/js/search.js
 // Safe, robust client-side search + rendering for What2Cook.
-// - Guards against missing DOM elements (e.g. on recipe detail page).
-// - Uses GET /api/recipes/search?ingredients=... to fetch JSON results.
-// - Renders simple cards and supports lazy image fallback.
-//
-// Note: actions.js handles like/bookmark buttons. This file only renders cards.
+// Guards against missing DOM elements (e.g. recipe detail page).
+
+(function debugElems() {
+  const names = ["search-form","ingredients-input","results","spinner","alerts","clear-btn"];
+  const found = {};
+  for (const n of names) {
+    found[n] = !!document.getElementById(n);
+  }
+  console.debug("search.js DOM presence:", found);
+})();
 
 const form = document.getElementById("search-form");
 const input = document.getElementById("ingredients-input");
@@ -13,10 +18,8 @@ const spinner = document.getElementById("spinner");
 const alerts = document.getElementById("alerts");
 const clearBtn = document.getElementById("clear-btn");
 
-// Show a short alert message in page (non-blocking)
 function showAlert(message, type = "danger", timeout = 4000) {
   if (!alerts) {
-    // console fallback if no alert container present
     console[type === "danger" ? "error" : "log"](message);
     return;
   }
@@ -31,7 +34,6 @@ function escapeHtml(str) {
   });
 }
 
-// Render single recipe card (keeps markup compact)
 function renderRecipeCard(r) {
   const imgSrc = r.thumbnail_url || r.image_url || '/static/img/placeholder.png';
   const ingList = r.ingredients ? r.ingredients.map(i => escapeHtml(i)).join(", ") : "";
@@ -61,11 +63,6 @@ function renderRecipeCard(r) {
 
             <div class="mt-auto d-flex justify-content-between align-items-center">
               <a class="stretched-link" href="/recipes/${encodeURIComponent(r.id)}" aria-label="Open recipe details"></a>
-              <div class="ms-2">
-                <button type="button" class="btn btn-sm btn-outline-primary like-btn" data-like="${escapeHtml(r.id)}" aria-pressed="false" title="Like / Unlike">
-                  ❤️ <span class="visually-hidden">Like</span>
-                </button>
-              </div>
             </div>
 
           </div>
@@ -76,25 +73,19 @@ function renderRecipeCard(r) {
   `;
 }
 
-// Render list of recipes into resultsEl. If empty -> friendly message.
 function renderResults(list) {
   if (!resultsEl) return;
   if (!Array.isArray(list) || list.length === 0) {
     resultsEl.innerHTML = `<div class="col-12"><div class="alert alert-warning">No recipes found for your ingredients.</div></div>`;
     return;
   }
+  resultsEl.innerHTML = list.map(r => renderRecipeCard(r)).join("\n");
 
-  const html = list.map(r => renderRecipeCard(r)).join("\n");
-  resultsEl.innerHTML = html;
-
-  // If actions.js is present and exports initLikeButtons global, try to initialize like buttons
   try {
-    if (typeof initLikeButtons === "function") {
-      initLikeButtons(resultsEl);
-    }
+    if (typeof initActionButtons === "function") initActionButtons(resultsEl);
+    else if (typeof initLikeButtons === "function") initLikeButtons(resultsEl);
   } catch (err) {
-    // silent - actions.js may not be loaded on the page
-    console.debug("initLikeButtons not available or failed:", err);
+    console.debug("initActionButtons/initLikeButtons failed:", err);
   }
 }
 
@@ -103,8 +94,12 @@ function showSpinner(show = true) {
   spinner.style.display = show ? "" : "none";
 }
 
-// Perform AJAX search via API endpoint.
-// rawIngredients: raw string from textarea (commas/newlines separated)
+function parseInputToString(text) {
+  if (!text) return "";
+  const tokens = text.split(/[,\\n]+/).map(s => s.trim()).filter(Boolean);
+  return tokens.join(", ");
+}
+
 async function performSearch(rawIngredients, limit = 50) {
   if (!rawIngredients || !rawIngredients.trim()) {
     showAlert("Please enter at least one ingredient", "warning");
@@ -132,37 +127,18 @@ async function performSearch(rawIngredients, limit = 50) {
       return;
     }
 
-    let json = [];
-    try {
-      json = await res.json();
-    } catch (err) {
-      showAlert("Failed to parse server response.", "danger");
-      console.error("JSON parse error", err);
-      return;
-    }
-
+    const json = await res.json().catch(() => { showAlert("Failed to parse response", "danger"); return []; });
     renderResults(json);
   } catch (err) {
-    if (err.name === "AbortError") {
-      showAlert("Search timeout, please try again.", "warning");
-    } else {
-      console.error("performSearch error", err);
-      showAlert("Network error while searching.", "danger");
-    }
+    console.error("performSearch error", err);
+    showAlert("Network error while searching.", "danger");
   } finally {
     showSpinner(false);
   }
 }
 
-// Utility to parse textarea into normalized comma-separated string (keeps original formatting for query)
-function parseInputToString(text) {
-  if (!text) return "";
-  const tokens = text.split(/[,\\n]+/).map(s => s.trim()).filter(Boolean);
-  return tokens.join(", ");
-}
+/* --- safe DOM wiring --- */
 
-// --- Safeguarded DOM wiring ---
-// clear button
 if (clearBtn) {
   clearBtn.addEventListener("click", () => {
     if (input) input.value = "";
@@ -170,49 +146,24 @@ if (clearBtn) {
   });
 }
 
-// If the site uses server-rendered GET form (action="/search"), we still support JS-enhanced POST-like handling
 if (form) {
-  // If form.method == "post" (legacy), intercept submit and use AJAX
-  if ((form.method || "").toLowerCase() === "post") {
-    form.addEventListener("submit", async (ev) => {
-      ev.preventDefault();
-      const raw = input ? input.value || "" : "";
-      const norm = parseInputToString(raw);
-      if (!norm) {
-        showAlert("Please enter at least one ingredient", "warning");
-        return;
-      }
-      await performSearch(norm);
-    });
-  } else {
-    // If form uses GET (standard), we can optionally intercept and do client-side search instead of full page reload
-    form.addEventListener("submit", async (ev) => {
-      // If user pressed Ctrl/Cmd to open in new tab or form is used as navigation, let default happen.
-      if (ev.ctrlKey || ev.metaKey || ev.shiftKey) return;
-      ev.preventDefault();
-      const raw = input ? input.value || "" : "";
-      const norm = parseInputToString(raw);
-      if (!norm) {
-        showAlert("Please enter at least one ingredient", "warning");
-        return;
-      }
-      await performSearch(norm);
-    });
-  }
+  form.addEventListener("submit", async (ev) => {
+
+    if (ev.ctrlKey || ev.metaKey || ev.shiftKey) return;
+    ev.preventDefault();
+    const raw = input ? input.value || "" : "";
+    const norm = parseInputToString(raw);
+    if (!norm) {
+      showAlert("Please enter at least one ingredient", "warning");
+      return;
+    }
+    await performSearch(norm);
+  });
 }
 
-// Auto-run: if page has a prefilled query (server-side GET), perform search automatically
-(function autoRunPrefilled() {
-  try {
-    if (input && input.value && input.value.trim().length > 0) {
-      // perform small delay so page can finish loading other scripts (like actions.js)
-      setTimeout(() => {
-        const raw = parseInputToString(input.value);
-        if (raw) performSearch(raw);
-      }, 150);
-    }
-  } catch (err) {
-    // ignore
-    console.debug("autoRunPrefilled error", err);
-  }
-})();
+if (input && input.value && input.value.trim().length > 0 && resultsEl) {
+  setTimeout(() => {
+    const raw = parseInputToString(input.value);
+    if (raw) performSearch(raw);
+  }, 120);
+}

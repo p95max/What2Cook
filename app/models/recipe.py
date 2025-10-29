@@ -23,6 +23,8 @@ class Recipe(Base):
     thumbnail_url = Column(String(1024), nullable=True)
     image_meta = Column(String(1024), nullable=True)
 
+    likes_count = Column(Integer, default=0, nullable=False)
+
     ingredients = relationship("Ingredient", secondary=recipe_ingredient, back_populates="recipes")
 
     def __repr__(self) -> str:

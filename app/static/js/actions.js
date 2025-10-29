@@ -1,38 +1,67 @@
-function setBtnState(btn, liked) {
+// Handles like and bookmark UI and calls to API
+
+function setBtnState(btn, active) {
   if (!btn) return;
-  btn.classList.toggle('active', !!liked);
-  btn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+  btn.classList.toggle('active', !!active);
+  btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+}
+
+function updateLikesCountOnPage(recipeId, count) {
+  try {
+    const el = document.getElementById(`likes-count-${recipeId}`);
+    if (el) el.textContent = String(count);
+  } catch (e) {
+    console.warn('updateLikesCountOnPage', e);
+  }
 }
 
 async function toggleLike(recipeId, btnEl) {
   if (!btnEl || btnEl.dataset.inflight === '1') return;
   btnEl.dataset.inflight = '1';
   btnEl.setAttribute('aria-busy', 'true');
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
 
   try {
     const res = await fetch(`/api/recipes/${encodeURIComponent(recipeId)}/like`, {
       method: 'POST',
       credentials: 'same-origin',
       headers: { 'X-Requested-With': 'XMLHttpRequest' },
-      signal: controller.signal,
     });
-
     if (!res.ok) {
       console.warn('Like request failed', res.status);
       return;
     }
-
-    let j = null;
-    try { j = await res.json(); } catch (err) { console.warn('Invalid JSON', err); return; }
-
-    if (j && j.status === 'liked') setBtnState(btnEl, true); else setBtnState(btnEl, false);
+    const j = await res.json();
+    setBtnState(btnEl, j.status === 'liked');
+    if (typeof j.likes_count !== 'undefined') updateLikesCountOnPage(recipeId, j.likes_count);
   } catch (err) {
-    if (err.name === 'AbortError') console.warn('Like request aborted (timeout)');
-    else console.error('toggleLike error', err);
+    console.error('toggleLike error', err);
   } finally {
-    clearTimeout(timeout);
+    delete btnEl.dataset.inflight;
+    btnEl.removeAttribute('aria-busy');
+  }
+}
+
+async function toggleBookmark(recipeId, btnEl) {
+  if (!btnEl || btnEl.dataset.inflight === '1') return;
+  btnEl.dataset.inflight = '1';
+  btnEl.setAttribute('aria-busy', 'true');
+
+  try {
+    const res = await fetch(`/api/recipes/${encodeURIComponent(recipeId)}/bookmark`, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    });
+    if (!res.ok) {
+      console.warn('Bookmark request failed', res.status);
+      return;
+    }
+    const j = await res.json();
+    if (j.status === 'bookmarked') setBtnState(btnEl, true);
+    else setBtnState(btnEl, false);
+  } catch (err) {
+    console.error('toggleBookmark error', err);
+  } finally {
     delete btnEl.dataset.inflight;
     btnEl.removeAttribute('aria-busy');
   }
@@ -52,16 +81,35 @@ async function fetchActionState(recipeId) {
   }
 }
 
-async function initLikeButtons(scope = document) {
-  const buttons = Array.from(scope.querySelectorAll('[data-like]'));
-  if (buttons.length === 0) return;
-  for (const btn of buttons) {
-    const id = btn.getAttribute('data-like');
+async function initActionButtons(scope = document) {
+  const likeButtons = Array.from(scope.querySelectorAll('[data-like]'));
+  const bookmarkButtons = Array.from(scope.querySelectorAll('[data-bookmark]'));
+  const recipeIds = new Set([...likeButtons.map(b => b.getAttribute('data-like')), ...bookmarkButtons.map(b => b.getAttribute('data-bookmark'))]);
+
+  for (const id of recipeIds) {
     if (!id) continue;
     const state = await fetchActionState(id);
-    if (state && state.liked) setBtnState(btn, true);
-    btn.addEventListener('click', (ev) => { ev.preventDefault(); toggleLike(id, btn); });
+    if (state) {
+
+      likeButtons.filter(b => b.getAttribute('data-like') === id).forEach(b => setBtnState(b, !!state.liked));
+      bookmarkButtons.filter(b => b.getAttribute('data-bookmark') === id).forEach(b => setBtnState(b, !!state.bookmarked));
+      if (typeof state.likes_count !== 'undefined') updateLikesCountOnPage(id, state.likes_count);
+    }
+  }
+
+  for (const b of likeButtons) {
+    const id = b.getAttribute('data-like');
+    if (!id) continue;
+    b.addEventListener('click', (ev) => { ev.preventDefault(); toggleLike(id, b); });
+  }
+  for (const b of bookmarkButtons) {
+    const id = b.getAttribute('data-bookmark');
+    if (!id) continue;
+    b.addEventListener('click', (ev) => { ev.preventDefault(); toggleBookmark(id, b); });
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => initLikeButtons());
+// auto init on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+  try { initActionButtons(); } catch (e) { console.debug('initActionButtons', e); }
+});

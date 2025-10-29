@@ -4,23 +4,18 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete, insert, func
+from sqlalchemy import select, delete, insert, func, update
 from sqlalchemy.exc import IntegrityError
 
 from app.db import get_session
 from app.schemas import RecipeSearchOut
 from app.services.recipes import list_recipes, get_recipe, search_recipes
 from app.utils.mapping import map_input_to_ingredient_names
-
-# models for actions
-from app.models import Recipe, Ingredient  # ensure Recipe is available for existence checks
-# direct import for RecipeAction model (created earlier)
+from app.models import Recipe, Ingredient
 from app.models.anon import RecipeAction
-
-# dependency helper to create/get anon user
 from app.deps import get_or_create_anon_user
 
-router = APIRouter(prefix="/recipes", tags=["recipes"])  # note: prefix "/recipes" — main includes router under /api
+router = APIRouter(prefix="/recipes", tags=["recipes"])
 
 _SPLIT_RE = re.compile(r'[,\\n]+')
 
@@ -140,10 +135,6 @@ async def toggle_like(
     response: Response,
     session: AsyncSession = Depends(get_session),
 ):
-    """
-    Toggle like for current anon user.
-    Returns {"status":"liked"} or {"status":"unliked"}.
-    """
     q = await session.execute(select(Recipe).where(Recipe.id == recipe_id))
     if not q.scalars().first():
         raise HTTPException(status_code=404, detail="Recipe not found")
@@ -161,15 +152,54 @@ async def toggle_like(
     if existing:
         await session.execute(delete(RecipeAction).where(RecipeAction.id == existing.id))
         await session.commit()
-        return {"status": "unliked"}
+        cnt_q = await session.execute(select(func.count()).select_from(RecipeAction).where(RecipeAction.recipe_id == recipe_id, RecipeAction.action_type == "like"))
+        likes_count = int(cnt_q.scalar_one() or 0)
+        await session.execute(update(Recipe).where(Recipe.id == recipe_id).values(likes_count=likes_count))
+        await session.commit()
+        return {"status": "unliked", "likes_count": likes_count}
 
     try:
-        stmt = insert(RecipeAction).values(
-            anon_user_id=anon.id, recipe_id=recipe_id, action_type="like"
-        )
-        await session.execute(stmt)
+        await session.execute(insert(RecipeAction).values(anon_user_id=anon.id, recipe_id=recipe_id, action_type="like"))
         await session.commit()
-        return {"status": "liked"}
     except IntegrityError:
         await session.rollback()
-        return {"status": "liked"}
+
+    cnt_q = await session.execute(select(func.count()).select_from(RecipeAction).where(RecipeAction.recipe_id == recipe_id, RecipeAction.action_type == "like"))
+    likes_count = int(cnt_q.scalar_one() or 0)
+    await session.execute(update(Recipe).where(Recipe.id == recipe_id).values(likes_count=likes_count))
+    await session.commit()
+    return {"status": "liked", "likes_count": likes_count}
+
+
+@router.post("/{recipe_id}/bookmark", response_model=dict)
+async def toggle_bookmark(
+    recipe_id: int,
+    request: Request,
+    response: Response,
+    session: AsyncSession = Depends(get_session),
+):
+    q = await session.execute(select(Recipe).where(Recipe.id == recipe_id))
+    if not q.scalars().first():
+        raise HTTPException(status_code=404, detail="Recipe not found")
+
+    anon = await get_or_create_anon_user(request, response, session)
+
+    q = await session.execute(
+        select(RecipeAction).where(
+            RecipeAction.anon_user_id == anon.id,
+            RecipeAction.recipe_id == recipe_id,
+            RecipeAction.action_type == "bookmark",
+        )
+    )
+    existing = q.scalars().first()
+    if existing:
+        await session.execute(delete(RecipeAction).where(RecipeAction.id == existing.id))
+        await session.commit()
+        return {"status": "unbookmarked"}
+    try:
+        await session.execute(insert(RecipeAction).values(anon_user_id=anon.id, recipe_id=recipe_id, action_type="bookmark"))
+        await session.commit()
+        return {"status": "bookmarked"}
+    except IntegrityError:
+        await session.rollback()
+        return {"status": "bookmarked"}

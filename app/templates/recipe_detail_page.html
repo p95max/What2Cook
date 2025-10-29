@@ -25,8 +25,9 @@
           <div class="card-body">
             <h2 class="card-title d-flex align-items-center justify-content-between">
               <span>{{ recipe.title | e }}</span>
-              {# optional small meta on the right (e.g. likes count) #}
+
               <small class="text-muted ms-3" id="likes-count-{{ recipe.id }}" aria-live="polite">—</small>
+
             </h2>
 
             <p class="text-muted mb-2">
@@ -54,6 +55,7 @@
                 aria-pressed="false"
                 title="Like / Unlike">
                 <i class="bi bi-heart"></i>
+                  {{ recipe.likes_count or 0 }}
                 <span class="like-label ms-1">Like</span>
               </button>
 
@@ -66,6 +68,7 @@
                 <i class="bi bi-bookmark"></i>
                 <span class="bookmark-label ms-1">Save</span>
               </button>
+
             </div>
 
           </div>
