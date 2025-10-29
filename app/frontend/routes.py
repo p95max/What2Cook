@@ -20,6 +20,12 @@ async def index(request: Request, page: int = Query(1, ge=1), session: AsyncSess
     ctx.update({"request": request})
     return templates.TemplateResponse("index.html", ctx)
 
+@router.get("/catalog", include_in_schema=False, name="catalog_page")
+async def catalog_page(request: Request, page: int = Query(1, ge=1), session: AsyncSession = Depends(get_session)):
+    ctx = await list_recipes(session, page=page)
+    ctx.update({"request": request})
+    return templates.TemplateResponse("catalog.html", ctx)
+
 @router.get("/recipes/{recipe_id}", include_in_schema=False, name="recipe_page")
 async def recipe_page(request: Request, recipe_id: int, session: AsyncSession = Depends(get_session)):
     recipe = await get_recipe(session, recipe_id)
