@@ -1,36 +1,38 @@
-services:
-  db:
-    image: postgres:17
-    restart: unless-stopped
-    env_file:
-      - .env
-    volumes:
-      - db_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} -h localhost || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
-  web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    env_file:
-      - .env
-    environment:
-      - PYTHONPATH=/app
-      - DATABASE_URL=${DATABASE_URL}
-      - SECRET_KEY=${SECRET_KEY}
-      - PYTHONUNBUFFERED=${PYTHONUNBUFFERED}
-    volumes:
-      - ./:/app
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
+services:
+    db:
+      image: postgres:17
+      restart: unless-stopped
+      env_file:
+        - .env
+      volumes:
+        - db_data:/var/lib/postgresql/data
+      ports:
+        - "5432:5432"
+      healthcheck:
+        test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} -h localhost || exit 1" ]
+        interval: 10s
+        timeout: 5s
+        retries: 20
+
+    web:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      env_file:
+        - .env
+      environment:
+        - PYTHONPATH=/app
+        - DATABASE_URL=${DATABASE_URL}
+        - SECRET_KEY=${SECRET_KEY}
+        - PYTHONUNBUFFERED=${PYTHONUNBUFFERED}
+      volumes:
+        - ./:/app
+      ports:
+        - "8000:8000"
+      depends_on:
+        db:
+          condition: service_healthy
 
 volumes:
   db_data:

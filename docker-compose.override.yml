@@ -2,7 +2,7 @@ services:
   web:
     volumes:
       - ./:/app:cached
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: /app/entrypoint.sh
     ports:
       - "8000:8000"
     depends_on:

@@ -57,11 +57,13 @@ cp .env.example .env
 # Edit .env to set a secure SECRET_KEY and (optionally) SPOONACULAR_API_KEY
 ```
 
-**2. Build/run & migrate DB + server logs**
+**2. Build/run + server logs**
 
 ```bash
-docker compose up -d
-docker compose exec -e PYTHONPATH=/app web alembic upgrade head
+docker compose up -d --build
+```
+* Server logs
+```bash
 docker compose logs -f web
 ```
 
