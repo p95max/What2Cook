@@ -60,8 +60,8 @@ cp .env.example .env
 **2. Build & run**
 
 ```bash
-docker compose up --build -d
-# follow logs
+docker compose up -d
+docker compose exec -e PYTHONPATH=/app web alembic upgrade head
 docker compose logs -f web
 ```
 
