@@ -57,7 +57,7 @@ cp .env.example .env
 # Edit .env to set a secure SECRET_KEY and (optionally) SPOONACULAR_API_KEY
 ```
 
-**2. Build & run**
+**2. Build/run & migrate DB + server logs**
 
 ```bash
 docker compose up -d
@@ -65,20 +65,13 @@ docker compose exec -e PYTHONPATH=/app web alembic upgrade head
 docker compose logs -f web
 ```
 
-**3. Create / migrate DB (inside container)**
-
-```bash
-# open a shell in web container
-docker compose exec web alembic upgrade head
-```
-
-**4. (Optional) Load fixtures**
+**3. (Optional) Load fixtures**
 
 ```bash
 docker compose exec -e PYTHONPATH=/app web python fixtures/recipes_fixtures.py
 ```
 
-**5. Open**
+**4. Open**
 
 * Web UI: `http://localhost:8000/`
 * API docs (Swagger UI): `http://localhost:8000/docs`
@@ -86,30 +79,6 @@ docker compose exec -e PYTHONPATH=/app web python fixtures/recipes_fixtures.py
 **Dev override**
 
 `docker-compose.override.yml` enables hot reload for the `web` service (uses `uvicorn --reload`).
-
----
-
-## Running locally (without Docker)
-
-1. Install with Poetry:
-
-```bash
-poetry install --no-dev
-# or with dev deps
-poetry install
-```
-
-2. Set `DATABASE_URL` in env (see `.env.example`) and run migrations:
-
-```bash
-alembic upgrade head
-```
-
-3. Run dev server:
-
-```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
 
 ---
 
@@ -135,12 +104,6 @@ docker compose exec web alembic revision --autogenerate -m "init"
 docker compose exec web alembic upgrade head
 # drop and recreate public schema
 docker compose exec db bash -lc 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"'
-```
-
-Load fixtures:
-
-```bash
-docker compose exec -e PYTHONPATH=/app web python fixtures/recipes_fixtures.py
 ```
 
 ---
@@ -211,9 +174,11 @@ Contributions are welcome — open issues or PRs with small, focused changes. Fo
 
 ---
 
-## Author
+## Contacts
 
-`maxx` — contact: `m.petrykin@gmx.de` (listed in `pyproject.toml`).
+Author: Maksym Petrykin  
+Email: [m.petrykin@gmx.de](mailto:m.petrykin@gmx.de)  
+Telegram: [@max_p95](https://t.me/max_p95)
 
 ---
 
